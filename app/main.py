@@ -31,12 +31,12 @@ async def lifespan(app: FastAPI):
         scheduler.add_job(
             run_news_pipeline, 
             'interval', 
-            hours=2, 
+            minutes=5, 
             id='news_pipeline_job', 
             replace_existing=True
         )
         scheduler.start()
-        logger.info("APScheduler started. News pipeline will run every 2 hours.")
+        logger.info("APScheduler started. News pipeline will run every 5 minutes.")
     except Exception as e:
         logger.error(f"Failed to start APScheduler: {e}")
         
