@@ -13,6 +13,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The American Chronicle - Latest News & Exclusives</title>
+    <meta name="description" content="The American Chronicle delivers the latest breaking news, exclusive political stories, and bizarre events unfolding across the nation. Authentic and unapologetic.">
+    
+    <!-- Fast-loading DNS Preconnects -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://theuschronicle.disqus.com">
+
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f172a'/%3E%3Ctext x='50%25' y='54%25' font-family='Georgia, serif' font-size='34' font-weight='bold' font-style='italic' fill='%23ffffff' text-anchor='middle' dominant-baseline='middle'%3EUS%3C/text%3E%3C/svg%3E" type="image/svg+xml">
     <!-- Tailwind CSS -->
@@ -125,7 +132,7 @@
                         {% for article in bizarre %}
                         <article class="{% if loop.index == 1 %}md:col-span-2 border-b border-gray-300 pb-10{% else %}border-t border-gray-300 pt-8 md:border-t-0 md:pt-0{% endif %}">
                             <a href="/article/{{ article.slug }}"  class="block mb-4 overflow-hidden border-4 border-double border-black">
-                                <img src="{{ article.image_url or ('https://picsum.photos/seed/' ~ article.slug ~ '/800/600?grayscale') }}" alt="Article Cover" class="w-full h-auto grayscale contrast-[1.2] hover:grayscale-0 transition duration-700 ease-in-out mix-blend-multiply">
+                                <img src="{{ article.image_url or ('https://picsum.photos/seed/' ~ article.slug ~ '/800/600?grayscale') }}" alt="Article Cover" {% if loop.index == 1 %}fetchpriority="high"{% else %}loading="lazy"{% endif %} width="800" height="600" class="w-full h-auto grayscale contrast-[1.2] hover:grayscale-0 transition duration-700 ease-in-out mix-blend-multiply">
                             </a>
                             <header class="mb-4">
                                 <h3 class="text-3xl {% if loop.index == 1 %}md:text-5xl lg:text-6xl{% else %}md:text-3xl{% endif %} font-black leading-tight hover:text-gray-600 transition-colors cursor-pointer">
@@ -177,7 +184,7 @@
                         <li class="border-b border-gray-200 pb-8 last:border-0">
                             <a href="/article/{{ article.slug }}"  class="block group">
                                 <div class="mb-3 overflow-hidden border border-black">
-                                    <img src="{{ article.image_url or ('https://picsum.photos/seed/' ~ article.slug ~ '/800/600?grayscale') }}" alt="News Photo" class="w-full h-40 object-cover grayscale contrast-[1.2] group-hover:grayscale-0 transition duration-700 ease-in-out mix-blend-multiply">
+                                    <img src="{{ article.image_url or ('https://picsum.photos/seed/' ~ article.slug ~ '/800/600?grayscale') }}" alt="News Photo" loading="lazy" width="800" height="600" class="w-full h-40 object-cover grayscale contrast-[1.2] group-hover:grayscale-0 transition duration-700 ease-in-out mix-blend-multiply">
                                 </div>
                                 <h3 class="text-2xl font-bold leading-tight group-hover:text-gray-600 transition-colors mb-3">
                                     {{ article.title }}
