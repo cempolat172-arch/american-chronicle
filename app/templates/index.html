@@ -135,6 +135,8 @@
                                     <span class="font-bold text-black">By Chronicle Staff</span>
                                     <span>|</span>
                                     <span>{{ article.published_at.strftime('%B %d, %Y') if article.published_at else 'Just Published' }}</span>
+                                    <span>|</span>
+                                    <a href="/article/{{ article.slug }}#disqus_thread" data-disqus-identifier="article-{{ article.id }}" class="hover:text-black hover:underline text-blue-700 font-bold">Comments</a>
                                 </div>
                             </header>
                             <p class="text-gray-800 leading-relaxed text-lg {% if loop.index == 1 %}drop-cap text-xl{% endif %} mb-4">
@@ -288,6 +290,6 @@
                 }, 30000); // 30 seconds
             }
         });
-    </script>
+    <script id="dsq-count-scr" src="//theuschronicle.disqus.com/count.js" async></script>
 </body>
 </html>

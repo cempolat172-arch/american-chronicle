@@ -119,6 +119,8 @@
                     <span class="font-bold text-black">By Chronicle Staff</span>
                     <span>|</span>
                     <span>{{ article.published_at.strftime('%B %d, %Y') if article.published_at else article.created_at.strftime('%B %d, %Y') }}</span>
+                    <span>|</span>
+                    <a href="#disqus_thread" data-disqus-identifier="article-{{ article.id }}" class="hover:text-black hover:underline text-blue-700 font-bold">Comments</a>
                 </div>
             </header>
 
@@ -214,5 +216,6 @@
             }
         }
     </script>
+    <script id="dsq-count-scr" src="//theuschronicle.disqus.com/count.js" async></script>
 </body>
 </html>
