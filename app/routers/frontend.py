@@ -41,10 +41,11 @@ def read_category(request: Request, slug: str, db: Session = Depends(get_db)):
     slug_lower = slug.lower()
     
     keyword_map = {
-        "yapay-zeka": "AI",
-        "siyaset": "politic",
-        "sari-basin": "scandal",
-        "wild-tech": "tech"
+        "ai": "AI",
+        "politics": "politic",
+        "tabloids": "scandal",
+        "tech": "tech",
+        "astrology": "astrology"
     }
     
     search_term = keyword_map.get(slug_lower, slug_lower)
@@ -175,7 +176,7 @@ def generate_sitemap(db: Session = Depends(get_db)):
     xml_content += '  </url>\n'
     
     # Add Categories
-    categories = ["yapay-zeka", "siyaset", "sari-basin", "wild-tech"]
+    categories = ["ai", "politics", "tabloids", "tech", "astrology"]
     for cat in categories:
         xml_content += '  <url>\n'
         xml_content += f'    <loc>{base_url}/category/{cat}</loc>\n'

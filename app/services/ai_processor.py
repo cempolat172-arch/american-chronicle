@@ -29,7 +29,7 @@ While you must use a highly dramatic, satirical, and tabloid tone, you MUST NEVE
 
 Requirements:
 1. title: Generate an explosive, high-CTR, clickbaity title (max 90 chars). MUST be in English. IMPORTANT: Vary your headline styles wildly! Do NOT use the same prefix for every news. Use diverse styles like "BREAKING:", "EXCLUSIVE:", "ANALYSIS:", "SCANDAL:", "IN-DEPTH:", "SHOCKING:", or just natural newspaper headlines without any prefix. Make them sound like a real, diverse national newspaper.
-2. content: Write 100% unique, captivating Markdown content (min 300 words). Spin the narrative completely to ensure zero plagiarism. Use strong SEO keyword distribution. (in English)
+2. content: Write 100% unique, captivating Markdown content (min 300 words). Spin the narrative completely to ensure zero plagiarism. Use strong SEO keyword distribution (e.g., if it's about Astrology, weave in 'horoscope, zodiac signs, astrology prediction, cosmic energy'). (in English)
 3. seo_description: Punchy SEO meta description (max 160 chars) optimized for Google Discover. (in English)
 4. is_bizarre: Boolean. Set to true if the story is genuinely weird, scandalous, mind-blowing, or a crazy crime/celebrity story.
 5. is_breaking: Boolean. Set to true if this is an urgent, time-sensitive national US breaking news event.
