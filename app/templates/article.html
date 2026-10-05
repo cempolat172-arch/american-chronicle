@@ -150,6 +150,23 @@
                 </button>
             </div>
 
+            <!-- Disqus Comments Section -->
+            <div id="disqus_thread" class="mt-16 pt-8 border-t border-gray-300"></div>
+            <script>
+                var disqus_config = function () {
+                    this.page.url = "https://theuschronicle.com/article/{{ article.slug }}";  // Canlı URL
+                    this.page.identifier = "article-{{ article.id }}"; // Benzersiz ID
+                };
+                (function() { // DON'T EDIT BELOW THIS LINE
+                    var d = document, s = d.createElement('script');
+                    // 'theuschronicle' kısmını kendi Disqus shortname'inizle değiştirmelisiniz
+                    s.src = 'https://theuschronicle.disqus.com/embed.js';
+                    s.setAttribute('data-timestamp', +new Date());
+                    (d.head || d.body).appendChild(s);
+                })();
+            </script>
+            <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
         </article>
 
         <footer class="border-t-4 border-double border-black py-12 mt-16 text-center font-sans">
