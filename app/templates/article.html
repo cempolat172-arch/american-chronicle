@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ article.title }} - The American Chronicle</title>
+    <meta name="description" content="{{ article.seo_description }}">
+    
+    <!-- Fast-loading DNS Preconnects -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+
+    <!-- Open Graph / Social Meta Tags -->
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="{{ article.title }}">
+    <meta property="og:description" content="{{ article.seo_description }}">
+    {% if article.image_url %}
+    <meta property="og:image" content="{{ article.image_url }}">
+    {% endif %}
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:site_name" content="The American Chronicle">
+    
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ article.title }}">
+    <meta name="twitter:description" content="{{ article.seo_description }}">
+    {% if article.image_url %}
+    <meta name="twitter:image" content="{{ article.image_url }}">
+    {% endif %}
+
+    <!-- Strict JSON-LD Schema for Google News -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "NewsArticle",
+      "headline": "{{ article.title | replace('"', '\\"') }}",
+      "image": [
+        "{{ article.image_url or 'https://via.placeholder.com/800x600?text=No+Image' }}"
+      ],
+      "datePublished": "{{ article.published_at.isoformat() if article.published_at else article.created_at.isoformat() }}",
+      "dateModified": "{{ article.created_at.isoformat() }}",
+      "author": [{
+          "@type": "Organization",
+          "name": "Chronicle Staff",
+          "url": "{{ request.base_url }}"
+        }],
+      "publisher": {
+        "@type": "Organization",
+        "name": "The American Chronicle",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "{{ request.base_url }}logo.png"
+        }
+      },
+      "description": "{{ article.seo_description | replace('"', '\\"') }}"
+    }
+    </script>
+
+    <!-- Tailwind & Fonts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&family=Lora:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+    <!-- Markdown Parser -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <style>
+        body { background-color: #f6f5f0; color: #111; font-family: 'Lora', serif; }
+        h1, h2, h3, h4, .masthead { font-family: 'Playfair Display', serif; }
+        .double-border { border-bottom: 4px double #111; border-top: 4px double #111; }
+        .article-content p { margin-bottom: 1.5rem; line-height: 1.8; font-size: 1.125rem; }
+        .article-content h2, .article-content h3 { font-family: 'Playfair Display', serif; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1rem; }
+        .article-content h2 { font-size: 1.875rem; }
+        .article-content h3 { font-size: 1.5rem; }
+        .article-content blockquote { font-style: italic; border-left: 4px solid #111; padding-left: 1rem; margin-left: 0; color: #444; }
+        .article-content ul, .article-content ol { margin-left: 2rem; margin-bottom: 1.5rem; }
+        .article-content li { margin-bottom: 0.5rem; }
+        .article-content a { color: #2563eb; text-decoration: underline; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-gray-300">
+    
+    <div class="max-w-5xl mx-auto w-full px-4 lg:px-12 bg-[#fdfdfc] shadow-2xl min-h-screen pt-8 pb-16">
+        
+        <!-- Header -->
+        <header class="text-center mb-10">
+            <a href="/" class="masthead text-5xl md:text-6xl leading-none font-black tracking-tight text-gray-900 hover:text-gray-600 transition">
+                The American Chronicle
+            </a>
+            <div class="double-border mt-6 py-2 flex justify-center items-center px-4 font-sans text-[10px] sm:text-xs uppercase font-bold text-gray-700 tracking-[0.2em]">
+                <a href="/" class="hover:underline">← Back to Front Page</a>
+            </div>
+        </header>
+
+        <!-- Article Container -->
+        <article class="max-w-3xl mx-auto">
+            
+            <header class="mb-8 text-center">
+                {% if article.is_breaking %}
+                <span class="inline-block bg-red-700 text-white font-sans font-bold uppercase tracking-widest text-xs px-3 py-1 mb-6">Breaking News</span>
+                {% endif %}
+                
+                <h1 class="text-4xl md:text-6xl font-black leading-tight mb-6">{{ article.title }}</h1>
+                
+                <p class="text-xl md:text-2xl text-gray-600 italic mb-8 font-serif leading-relaxed">
+                    {{ article.seo_description }}
+                </p>
+
+                <div class="flex items-center justify-center gap-4 text-xs font-sans uppercase tracking-widest text-gray-500 border-t border-b border-gray-300 py-3">
+                    <span class="font-bold text-black">By Chronicle Staff</span>
+                    <span>|</span>
+                    <span>{{ article.published_at.strftime('%B %d, %Y') if article.published_at else article.created_at.strftime('%B %d, %Y') }}</span>
+                </div>
+            </header>
+
+            {% if article.image_url %}
+            <figure class="mb-10 border-4 border-double border-black p-1 bg-white">
+                <img src="{{ article.image_url }}" alt="Cover Photo" class="w-full h-auto grayscale contrast-[1.2] hover:grayscale-0 transition duration-700 ease-in-out mix-blend-multiply">
+                <figcaption class="text-[10px] font-sans uppercase tracking-widest text-gray-500 text-right mt-2 pr-1">Archive Photo</figcaption>
+            </figure>
+            {% endif %}
+
+            <!-- Markdown Content Injection -->
+            <div id="markdown-content" class="article-content text-gray-800 drop-cap-enabled">
+                <!-- Content injected via JS -->
+            </div>
+
+            <!-- Original Source Link -->
+            <div class="mt-12 pt-6 border-t-2 border-black text-center font-sans text-xs uppercase tracking-widest">
+                <a href="{{ article.original_url }}" target="_blank" rel="noopener nofollow" class="text-blue-700 font-bold hover:underline">Read Original Dispatch →</a>
+            </div>
+
+            <!-- Reactions -->
+            <div class="mt-8 flex justify-center gap-4">
+                <button onclick="submitReaction({{ article.id }}, 'shock', this)" class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-400 hover:bg-gray-100 transition text-xs font-sans text-gray-700 uppercase tracking-widest shadow-sm">
+                    <span class="text-xl">🤯</span> <span class="font-bold reaction-count">{{ article.reaction_shock or 0 }}</span>
+                </button>
+                <button onclick="submitReaction({{ article.id }}, 'fire', this)" class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-400 hover:bg-gray-100 transition text-xs font-sans text-gray-700 uppercase tracking-widest shadow-sm">
+                    <span class="text-xl">🔥</span> <span class="font-bold reaction-count">{{ article.reaction_fire or 0 }}</span>
+                </button>
+                <button onclick="submitReaction({{ article.id }}, 'clown', this)" class="flex items-center gap-2 px-4 py-2 bg-white border border-gray-400 hover:bg-gray-100 transition text-xs font-sans text-gray-700 uppercase tracking-widest shadow-sm">
+                    <span class="text-xl">🤡</span> <span class="font-bold reaction-count">{{ article.reaction_clown or 0 }}</span>
+                </button>
+            </div>
+
+        </article>
+
+        <footer class="border-t-4 border-double border-black py-12 mt-16 text-center font-sans">
+            <h4 class="font-serif font-black text-2xl mb-4 text-gray-900">The American Chronicle</h4>
+            <div class="flex justify-center items-center gap-4 text-[10px] text-gray-500 uppercase tracking-widest mb-8 font-bold">
+                <a href="/legal" class="hover:text-black hover:underline">Legal & Disclaimers</a>
+                <span>|</span>
+                <a href="/legal" class="hover:text-black hover:underline">Notice & Takedown</a>
+                <span>|</span>
+                <a href="mailto:legal@theamericanchronicle.com" class="hover:text-black hover:underline">Contact Us</a>
+            </div>
+            <div class="max-w-2xl mx-auto text-[10px] text-gray-400 leading-relaxed border-t border-gray-200 pt-6 text-center px-4">
+                <strong>LEGAL DISCLAIMER:</strong> The US Chronicle is an autonomous AI-driven digital publication. Articles may use satirical, exaggerated, or fictionalized elements for entertainment purposes. All content is generated algorithmically.
+            </div>
+            <p class="text-[10px] text-gray-400 uppercase tracking-widest mt-6">Copyright © 2026. All Rights Reserved.</p>
+        </footer>
+    </div>
+
+    <!-- Data Injection for Markdown -->
+    <script type="application/json" id="raw-markdown">
+        {{ article.content | tojson | safe }}
+    </script>
+
+    <script>
+        // Parse and render markdown
+        const rawContent = JSON.parse(document.getElementById('raw-markdown').textContent);
+        document.getElementById('markdown-content').innerHTML = marked.parse(rawContent);
+
+        // Handle emoji reactions
+        async function submitReaction(articleId, reactionType, btnElement) {
+            try {
+                const response = await fetch(`/api/reactions/${articleId}/${reactionType}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    const countSpan = btnElement.querySelector('.reaction-count');
+                    countSpan.textContent = data.new_count;
+                    btnElement.classList.add('bg-gray-200');
+                    setTimeout(() => btnElement.classList.remove('bg-gray-200'), 200);
+                }
+            } catch (error) {
+                console.error("Error submitting reaction:", error);
+            }
+        }
+    </script>
+</body>
+</html>
