@@ -51,6 +51,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="AI Autonomous Tech News Portal", lifespan=lifespan)
 
+from fastapi.staticfiles import StaticFiles
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 # Include routers
 app.include_router(frontend.router)
 app.include_router(automation.router)
