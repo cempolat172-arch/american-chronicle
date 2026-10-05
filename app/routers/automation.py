@@ -2,14 +2,14 @@ import logging
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Header, Depends
 from typing import Optional
 from app.services.publisher import run_news_pipeline
+from app.config import settings
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["automation"])
 
-# Basit bir güvenlik kontrolü (İsteğe bağlı olarak env dosyasına alınabilir)
+# API anahtarı kontrolü (.env veya config üzerinden)
 def verify_api_key(x_api_key: Optional[str] = Header(None)):
-    SECRET_KEY = "kronik-admin-123" # Güvenlik için token
-    if x_api_key != SECRET_KEY:
+    if x_api_key != settings.AUTOMATION_API_KEY:
         raise HTTPException(status_code=401, detail="Yetkisiz erişim. Geçersiz API anahtarı.")
 
 @router.api_route("/trigger-news", methods=["GET", "POST"], dependencies=[Depends(verify_api_key)])

@@ -112,7 +112,7 @@
             </header>
 
             <figure class="mb-10 border-4 border-double border-black p-1 bg-white">
-                <img src="{{ article.image_url or 'https://image.pollinations.ai/prompt/vintage%20black%20and%20white%20newspaper%20investigation?nologo=true' }}" alt="Cover Photo" class="w-full h-auto grayscale contrast-[1.2] hover:grayscale-0 transition duration-700 ease-in-out mix-blend-multiply">
+                <img src="{{ article.image_url or ('https://picsum.photos/seed/' ~ article.slug ~ '/800/600?grayscale') }}" alt="Cover Photo" class="w-full h-auto grayscale contrast-[1.2] hover:grayscale-0 transition duration-700 ease-in-out mix-blend-multiply">
                 <figcaption class="text-[10px] font-sans uppercase tracking-widest text-gray-500 text-right mt-2 pr-1">Archive Photo</figcaption>
             </figure>
 

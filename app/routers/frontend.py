@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response, HTTPException
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -151,3 +151,50 @@ def get_latest_breaking(db: Session = Depends(get_db)):
     if latest:
         return {"id": latest.id, "title": latest.title, "slug": latest.slug}
     return {"id": 0}
+
+@router.get("/sitemap.xml")
+def generate_sitemap(db: Session = Depends(get_db)):
+    """
+    Generates a dynamic XML sitemap for SEO / Google News discovery.
+    """
+    # Fetch all articles, ordered by newest first
+    articles = db.query(NewsArticle).order_by(NewsArticle.published_at.desc()).all()
+    
+    # Base URL of the application
+    base_url = "https://theuschronicle.com"
+    
+    # Start XML
+    xml_content = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    xml_content += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    
+    # Add Homepage
+    xml_content += '  <url>\n'
+    xml_content += f'    <loc>{base_url}/</loc>\n'
+    xml_content += '    <changefreq>always</changefreq>\n'
+    xml_content += '    <priority>1.0</priority>\n'
+    xml_content += '  </url>\n'
+    
+    # Add Categories
+    categories = ["yapay-zeka", "siyaset", "sari-basin", "wild-tech"]
+    for cat in categories:
+        xml_content += '  <url>\n'
+        xml_content += f'    <loc>{base_url}/category/{cat}</loc>\n'
+        xml_content += '    <changefreq>hourly</changefreq>\n'
+        xml_content += '    <priority>0.8</priority>\n'
+        xml_content += '  </url>\n'
+    
+    # Add Articles
+    for article in articles:
+        # Some dates might be None
+        pub_date = article.published_at.strftime("%Y-%m-%dT%H:%M:%S+00:00") if article.published_at else "2026-01-01T00:00:00+00:00"
+        
+        xml_content += '  <url>\n'
+        xml_content += f'    <loc>{base_url}/article/{article.slug}</loc>\n'
+        xml_content += f'    <lastmod>{pub_date}</lastmod>\n'
+        xml_content += '    <changefreq>never</changefreq>\n'
+        xml_content += '    <priority>0.6</priority>\n'
+        xml_content += '  </url>\n'
+        
+    xml_content += '</urlset>'
+    
+    return Response(content=xml_content, media_type="application/xml")

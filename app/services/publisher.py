@@ -54,12 +54,10 @@ def publish_article(db: Session, raw_news: dict, ai_result: dict) -> Optional[Ne
         logger.error(f"Database error while generating unique slug: {e}")
         return None
 
-    import urllib.parse
     image_url = raw_news.get("image_url")
     if not image_url:
-        # Yapay zeka ile fotoğraf üret (Fallback)
-        prompt = f"dramatic black and white newspaper photograph of {title}, vintage, high contrast"
-        image_url = f"https://image.pollinations.ai/prompt/{urllib.parse.quote(prompt)}?nologo=true&width=800&height=600"
+        # Fallback to a fast, reliable, deterministic vintage placeholder
+        image_url = f"https://picsum.photos/seed/{slug}/800/600?grayscale"
 
     new_article = NewsArticle(
         title=title,
