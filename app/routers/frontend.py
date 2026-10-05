@@ -22,11 +22,10 @@ def read_index(request: Request, db: Session = Depends(get_db)):
     
     # Fetch bizarre / ultra-interesting news
     bizarre_articles = db.query(NewsArticle).filter(NewsArticle.is_bizarre == True).order_by(NewsArticle.published_at.desc()).limit(4).all()
-    
     return templates.TemplateResponse(
+        request,
         "index.html", 
         {
-            "request": request, 
             "articles": latest_articles,
             "breaking": breaking_articles,
             "bizarre": bizarre_articles,
@@ -59,9 +58,9 @@ def read_category(request: Request, slug: str, db: Session = Depends(get_db)):
     bizarre_articles = query.filter(NewsArticle.is_bizarre == True).order_by(NewsArticle.published_at.desc()).limit(4).all()
     
     return templates.TemplateResponse(
+        request,
         "index.html", 
         {
-            "request": request, 
             "articles": latest_articles,
             "breaking": breaking_articles,
             "bizarre": bizarre_articles,
@@ -87,9 +86,9 @@ def search_articles(request: Request, q: str = "", db: Session = Depends(get_db)
     bizarre_articles = query.filter(NewsArticle.is_bizarre == True).order_by(NewsArticle.published_at.desc()).limit(10).all()
     
     return templates.TemplateResponse(
+        request,
         "index.html", 
         {
-            "request": request, 
             "articles": latest_articles,
             "breaking": breaking_articles,
             "bizarre": bizarre_articles,
@@ -108,9 +107,9 @@ def read_article(request: Request, slug: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Article not found")
         
     return templates.TemplateResponse(
+        request,
         "article.html", 
         {
-            "request": request, 
             "article": article
         }
     )
@@ -120,7 +119,7 @@ def read_legal(request: Request):
     """
     Renders the dedicated legal disclaimer and takedown policy page.
     """
-    return templates.TemplateResponse("legal.html", {"request": request})
+    return templates.TemplateResponse(request, "legal.html")
 
 @router.post("/api/reactions/{article_id}/{reaction_type}")
 def add_reaction(article_id: int, reaction_type: str, db: Session = Depends(get_db)):
