@@ -87,68 +87,65 @@ def publish_article(db: Session, raw_news: dict, ai_result: dict) -> Optional[Ne
         return None
 
 async def run_news_pipeline() -> dict:
-    """Main pipeline to collect, process, and publish news."""
-    logger.info("Starting news collection pipeline...")
+    """Main pipeline to collect, process, and publish news concurrently & quickly."""
+    logger.info("Starting optimized news collection pipeline...")
     
     try:
         raw_news_list = await collect_news()
         logger.info(f"Collected {len(raw_news_list)} raw articles.")
     except Exception as e:
         logger.error(f"Failed to collect news: {e}")
-        return {"status": "error", "message": f"Failed to collect news: {str(e)}"}
+        return {"status": "error", "message": "Collection failed"}
 
     try:
         db = SessionLocal()
     except Exception as e:
         logger.error(f"Failed to create database session: {e}")
-        return {"status": "error", "message": f"Database connection failed: {str(e)}"}
+        return {"status": "error", "message": "DB connection failed"}
         
-    processed_count = 0
-    errors = []
-    
     try:
+        # Step 1: Filter out existing articles synchronously
+        new_articles = []
         for raw_news in raw_news_list:
             original_url = raw_news.get("link")
             if not original_url:
-                logger.warning("Found an article with no link. Skipping.")
                 continue
-
+            if not check_article_exists(db, original_url):
+                new_articles.append(raw_news)
+                
+        # Step 2: Limit batch size to 5 to avoid Vercel timeouts (10s) and Gemini RPM limits (15/min)
+        batch = new_articles[:5]
+        logger.info(f"Processing a fast batch of {len(batch)} new articles out of {len(new_articles)} pending...")
+        
+        # Step 3: Process AI generation concurrently
+        import asyncio
+        async def process_single(raw_news):
             try:
-                # Check duplication before AI processing to save API costs
-                if check_article_exists(db, original_url):
-                    logger.info(f"Skipping duplicate article: {original_url}")
-                    continue
-
-                logger.info(f"Processing with AI: {raw_news.get('title')}")
-                ai_result = await process_article_with_ai(raw_news)
+                ai_res = await process_article_with_ai(raw_news)
+                return raw_news, ai_res
+            except Exception as e:
+                logger.error(f"AI error for {raw_news.get('title')}: {e}")
+                return None
                 
-                if ai_result:
-                    published = publish_article(db, raw_news, ai_result)
-                    if published:
-                        processed_count += 1
-                else:
-                    logger.warning(f"AI processing returned None for: {original_url}")
-                    errors.append({"url": original_url, "error": "AI processing returned None"})
-                
-                import asyncio
-                # Hız limiti (Rate Limit) aşımını önlemek için 5 saniye bekle
-                await asyncio.sleep(5)
-            except Exception as item_error:
-                error_msg = f"Error processing article {original_url}: {str(item_error)}"
-                logger.error(error_msg)
-                errors.append({"url": original_url, "error": str(item_error)})
-                # Continue with the next article instead of crashing the pipeline
-                continue
+        tasks = [process_single(news) for news in batch]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        
+        # Step 4: Save to DB sequentially to avoid transaction locks
+        published_count = 0
+        for res in results:
+            if isinstance(res, tuple):
+                raw, ai_res = res
+                if ai_res:
+                    if publish_article(db, raw, ai_res):
+                        published_count += 1
+                        
+        return {
+            "status": "success", 
+            "message": f"Successfully published {published_count} new articles.",
+            "pending_in_queue": len(new_articles) - len(batch) if len(new_articles) > len(batch) else 0
+        }
     finally:
         try:
             db.close()
         except Exception as e:
             logger.error(f"Error closing database session: {e}")
-    
-    logger.info(f"Pipeline completed. Published {processed_count} new articles.")
-    return {
-        "status": "completed", 
-        "collected": len(raw_news_list), 
-        "published": processed_count,
-        "errors": errors
-    }
