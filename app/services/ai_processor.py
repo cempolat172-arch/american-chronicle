@@ -28,7 +28,7 @@ CRITICAL ETHICAL & LEGAL GUARDRAILS:
 While you must use a highly dramatic, satirical, and tabloid tone, you MUST NEVER generate direct hate speech, dangerous incitement, or malicious, defamatory attacks against real individuals. Focus the satire on political absurdities, institutional flaws, and general entertainment. Avoid dangerous personal legal violations at all costs.
 
 Requirements:
-1. title: Generate an explosive, high-CTR, clickbaity title (max 70 chars). (in English)
+1. title: Generate an explosive, high-CTR, clickbaity title (max 90 chars). MUST be in English. IMPORTANT: Vary your headline styles wildly! Do NOT use the same prefix for every news. Use diverse styles like "BREAKING:", "EXCLUSIVE:", "ANALYSIS:", "SCANDAL:", "IN-DEPTH:", "SHOCKING:", or just natural newspaper headlines without any prefix. Make them sound like a real, diverse national newspaper.
 2. content: Write 100% unique, captivating Markdown content (min 300 words). Spin the narrative completely to ensure zero plagiarism. Use strong SEO keyword distribution. (in English)
 3. seo_description: Punchy SEO meta description (max 160 chars) optimized for Google Discover. (in English)
 4. is_bizarre: Boolean. Set to true if the story is genuinely weird, scandalous, mind-blowing, or a crazy crime/celebrity story.
@@ -46,7 +46,7 @@ Summary: {summary}
         # Generate content using the new google-genai syntax and latest model
         response = await asyncio.to_thread(
             client.models.generate_content,
-            model='gemini-3.8-flash',
+            model='gemini-2.5-flash',
             contents=prompt,
         )
         
@@ -78,13 +78,17 @@ Summary: {summary}
         logger.warning(f"GEMINI API ERROR or SAFETY BLOCK ('{title}'): {error_msg}")
         
         # Fallback to a safe, generic satirical template to prevent pipeline crashes
+        import random
         safe_title = title if len(title) < 50 else title[:47] + "..."
-        safe_content = f"## The Anomaly Surrounding: {safe_title}\n\nWe attempted to dig into the scandalous details of this event, but our artificial intelligence sensors were immediately jammed by what can only be described as a massive institutional cover-up.\n\nWhile we cannot legally confirm the bizarre rumors circulating in the dark corners of the web, the sheer absurdity of the situation speaks volumes. Our legal team advised us to step back, but the silence itself is the biggest story of the year.\n\nStay tuned as we continue to monitor this highly classified anomaly."
+        prefixes = ["BREAKING", "EXCLUSIVE", "ANALYSIS", "SPECIAL REPORT", "SCANDAL", "INSIDE STORY"]
+        chosen_prefix = random.choice(prefixes)
+        
+        safe_content = f"## {chosen_prefix}: {safe_title}\n\nWe attempted to dig into the scandalous details of this event, but our artificial intelligence sensors were immediately jammed by what can only be described as a massive institutional cover-up.\n\nWhile we cannot legally confirm the bizarre rumors circulating in the dark corners of the web, the sheer absurdity of the situation speaks volumes. Our legal team advised us to step back, but the silence itself is the biggest story of the year.\n\nStay tuned as we continue to monitor this highly classified anomaly."
         
         return {
-            "title": f"Bizarre Glitch: The Cover-Up Behind {safe_title}",
+            "title": f"{chosen_prefix}: The Truth Behind {safe_title}",
             "content": safe_content,
             "seo_description": "An institutional anomaly blocked our full report, but the bizarre truth is out there.",
             "is_bizarre": True,
-            "is_breaking": False
+            "is_breaking": (chosen_prefix == "BREAKING")
         }
