@@ -17,10 +17,12 @@
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f172a'/%3E%3Ctext x='50%25' y='54%25' font-family='Georgia, serif' font-size='34' font-weight='bold' font-style='italic' fill='%23ffffff' text-anchor='middle' dominant-baseline='middle'%3EUS%3C/text%3E%3C/svg%3E" type="image/svg+xml">
     
-    <!-- Fast-loading DNS Preconnects -->
+    <!-- Fast-loading DNS Preconnects & LCP Optimization -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="dns-prefetch" href="https://theuschronicle.disqus.com">
+    <link rel="preload" as="image" href="{{ article.image_url or ('https://picsum.photos/seed/' ~ article.slug ~ '/800/600?grayscale') }}">
 
     <!-- Open Graph / Social Meta Tags -->
     <meta property="og:type" content="article">
@@ -115,7 +117,7 @@
                     {{ article.seo_description }}
                 </p>
 
-                <div class="flex items-center justify-center gap-4 text-xs font-sans uppercase tracking-widest text-gray-500 border-t border-b border-gray-300 py-3">
+                <div class="flex items-center justify-center gap-4 text-xs font-sans uppercase tracking-widest text-gray-600 border-t border-b border-gray-300 py-3">
                     <span class="font-bold text-black">By Chronicle Staff</span>
                     <span>|</span>
                     <span>{{ article.published_at.strftime('%B %d, %Y') if article.published_at else article.created_at.strftime('%B %d, %Y') }}</span>
@@ -126,7 +128,7 @@
 
             <figure class="mb-10 border-4 border-double border-black p-1 bg-white">
                 <img src="{{ article.image_url or ('https://picsum.photos/seed/' ~ article.slug ~ '/800/600?grayscale') }}" alt="Cover Photo" fetchpriority="high" width="800" height="600" class="w-full h-auto grayscale contrast-[1.2] hover:grayscale-0 transition duration-700 ease-in-out mix-blend-multiply">
-                <figcaption class="text-[10px] font-sans uppercase tracking-widest text-gray-500 text-right mt-2 pr-1">Archive Photo</figcaption>
+                <figcaption class="text-[10px] font-sans uppercase tracking-widest text-gray-600 text-right mt-2 pr-1">Archive Photo</figcaption>
             </figure>
 
             <!-- Markdown Content Injection -->
@@ -173,17 +175,17 @@
 
         <footer class="border-t-4 border-double border-black py-12 mt-16 text-center font-sans">
             <h4 class="font-serif font-black text-2xl mb-4 text-gray-900">The American Chronicle</h4>
-            <div class="flex justify-center items-center gap-4 text-[10px] text-gray-500 uppercase tracking-widest mb-8 font-bold">
+            <div class="flex justify-center items-center gap-4 text-[10px] text-gray-600 uppercase tracking-widest mb-8 font-bold">
                 <a href="/legal" class="hover:text-black hover:underline">Legal & Disclaimers</a>
                 <span>|</span>
                 <a href="/legal" class="hover:text-black hover:underline">Notice & Takedown</a>
                 <span>|</span>
                 <a href="mailto:legal@theamericanchronicle.com" class="hover:text-black hover:underline">Contact Us</a>
             </div>
-            <div class="max-w-2xl mx-auto text-[10px] text-gray-400 leading-relaxed border-t border-gray-200 pt-6 text-center px-4">
+            <div class="max-w-2xl mx-auto text-[10px] text-gray-600 leading-relaxed border-t border-gray-200 pt-6 text-center px-4">
                 <strong>LEGAL DISCLAIMER:</strong> The US Chronicle is an autonomous AI-driven digital publication. Articles may use satirical, exaggerated, or fictionalized elements for entertainment purposes. All content is generated algorithmically.
             </div>
-            <p class="text-[10px] text-gray-400 uppercase tracking-widest mt-6">Copyright © 2026. All Rights Reserved.</p>
+            <p class="text-[10px] text-gray-600 uppercase tracking-widest mt-6">Copyright © 2026. All Rights Reserved.</p>
         </footer>
     </div>
 
