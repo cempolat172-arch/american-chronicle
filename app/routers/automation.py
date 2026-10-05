@@ -13,23 +13,19 @@ def verify_api_key(x_api_key: Optional[str] = Header(None)):
         raise HTTPException(status_code=401, detail="Yetkisiz erişim. Geçersiz API anahtarı.")
 
 @router.api_route("/trigger-news", methods=["GET", "POST"], dependencies=[Depends(verify_api_key)])
-async def trigger_news_secure(background_tasks: BackgroundTasks, sync: bool = False):
+async def trigger_news_secure(background_tasks: BackgroundTasks):
     """
     Manuel Haber Tetikleme Endpoint'i (Korumalı).
-    Cron-job veya manuel istekler için kullanılır.
-    Kullanım: GET /api/trigger-news?sync=false -H "x-api-key: kronik-admin-123"
+    Cron-job veya manuel istekler için kullanılır. Cron timeout'larına (30s) takılmamak 
+    için işlemi anında arka plana (BackgroundTasks) atar ve anında 200 OK döner.
+    Kullanım: POST /api/trigger-news -H "x-api-key: kronik-admin-123"
     """
-    if not sync:
-        background_tasks.add_task(run_news_pipeline)
-        return {"message": "Haber akışı (pipeline) arka planda başlatıldı."}
-
-    try:
-        logger.info("Manual synchronous pipeline trigger started.")
-        result = await run_news_pipeline()
-        return {"message": "Pipeline tamamlandı.", "details": result}
-    except Exception as e:
-        logger.error(f"Pipeline execution failed: {e}")
-        raise HTTPException(status_code=500, detail=f"Pipeline execution failed: {str(e)}")
+    logger.info("Cron trigger received. Offloading to background task.")
+    background_tasks.add_task(run_news_pipeline)
+    return {
+        "status": "success",
+        "message": "Haber akışı arka planda asenkron olarak başlatıldı. İşlem kısa süre içinde tamamlanacaktır."
+    }
 
 @router.api_route("/automation/run-pipeline", methods=["GET", "POST"])
 async def legacy_trigger_pipeline(background_tasks: BackgroundTasks, sync: bool = True):
