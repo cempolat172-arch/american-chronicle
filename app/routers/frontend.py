@@ -41,18 +41,23 @@ def read_category(request: Request, slug: str, db: Session = Depends(get_db)):
     slug_lower = slug.lower()
     
     keyword_map = {
-        "ai": "AI",
-        "politics": "politic",
-        "tabloids": "scandal",
-        "tech": "tech",
-        "astrology": "astrology"
+        "ai": ["AI", "artificial intelligence", "robot", "chatgpt", "openai"],
+        "politics": ["politic", "election", "president", "biden", "trump", "senate", "congress", "white house"],
+        "tabloids": ["scandal", "hollywood", "celebrity", "gossip", "drama", "star", "kardashian", "taylor swift"],
+        "tech": ["tech", "apple", "google", "cyber", "elon musk", "software", "startup"],
+        "astrology": ["astrology", "zodiac", "horoscope", "stars", "moon", "retrograde", "aries", "taurus", "gemini", "cancer", "leo", "virgo", "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces", "eclipse", "planet"]
     }
     
-    search_term = keyword_map.get(slug_lower, slug_lower)
+    keywords = keyword_map.get(slug_lower, [slug_lower])
     
-    query = db.query(NewsArticle).filter(
-        (NewsArticle.content.ilike(f"%{search_term}%")) | (NewsArticle.title.ilike(f"%{search_term}%"))
-    )
+    # Create an OR condition for all keywords in the list
+    from sqlalchemy import or_
+    conditions = []
+    for kw in keywords:
+        conditions.append(NewsArticle.content.ilike(f"%{kw}%"))
+        conditions.append(NewsArticle.title.ilike(f"%{kw}%"))
+        
+    query = db.query(NewsArticle).filter(or_(*conditions))
     
     latest_articles = query.filter(NewsArticle.is_bizarre == False).order_by(NewsArticle.published_at.desc()).limit(12).all()
     breaking_articles = query.filter(NewsArticle.is_breaking == True).order_by(NewsArticle.published_at.desc()).limit(3).all()
