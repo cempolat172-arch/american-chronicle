@@ -96,10 +96,10 @@
         <nav class="border-b border-gray-400 py-3 mb-6 relative flex flex-col lg:flex-row justify-between items-center gap-4 px-2 sm:px-4">
             <div class="absolute bottom-0 left-0 w-full h-[1px] bg-black translate-y-[2px]"></div>
             <ul class="flex flex-wrap justify-center lg:justify-start lg:gap-8 items-center gap-4 text-[10px] sm:text-[11px] uppercase tracking-[0.15em] font-bold text-gray-700 font-sans flex-1">
-                <li><a href="/" class="hover:text-black hover:underline decoration-2 underline-offset-8 transition-all {% if not category and not search_query %}text-black underline{% endif %}">Anasayfa</a></li>
-                <li><a href="/category/yapay-zeka" class="hover:text-black hover:underline decoration-2 underline-offset-8 transition-all {% if category == 'yapay-zeka' %}text-black underline{% endif %}">Yapay Zeka</a></li>
-                <li><a href="/category/siyaset" class="hover:text-black hover:underline decoration-2 underline-offset-8 transition-all {% if category == 'siyaset' %}text-black underline{% endif %}">Siyaset & Kaos</a></li>
-                <li><a href="/category/sari-basin" class="hover:text-black hover:underline decoration-2 underline-offset-8 transition-all {% if category == 'sari-basin' %}text-black underline{% endif %}">Sarı Basın</a></li>
+                <li><a href="/" class="hover:text-black hover:underline decoration-2 underline-offset-8 transition-all {% if not category and not search_query %}text-black underline{% endif %}">Home</a></li>
+                <li><a href="/category/yapay-zeka" class="hover:text-black hover:underline decoration-2 underline-offset-8 transition-all {% if category == 'yapay-zeka' %}text-black underline{% endif %}">Artificial Intelligence</a></li>
+                <li><a href="/category/siyaset" class="hover:text-black hover:underline decoration-2 underline-offset-8 transition-all {% if category == 'siyaset' %}text-black underline{% endif %}">Politics & Chaos</a></li>
+                <li><a href="/category/sari-basin" class="hover:text-black hover:underline decoration-2 underline-offset-8 transition-all {% if category == 'sari-basin' %}text-black underline{% endif %}">Tabloids</a></li>
                 <li><a href="/category/wild-tech" class="hover:text-black hover:underline decoration-2 underline-offset-8 transition-all {% if category == 'wild-tech' %}text-black underline{% endif %}">Wild Tech</a></li>
             </ul>
             <form action="/search" method="GET" class="flex border border-gray-400 focus-within:border-black transition w-full lg:w-auto h-8 relative z-10 bg-[#fdfdfc]">
