@@ -45,7 +45,8 @@ def read_category(request: Request, slug: str, db: Session = Depends(get_db)):
         "politics": ["politic", "election", "president", "biden", "trump", "senate", "congress", "white house"],
         "tabloids": ["scandal", "hollywood", "celebrity", "gossip", "kardashian", "taylor swift"],
         "tech": ["tech", "apple", "google", "cyber", "elon musk", "software", "startup"],
-        "astrology": ["astrology", "zodiac", "horoscope", "retrograde", "tarot", "horoscopes", "zodiac sign", "aries", "taurus", "leo", "virgo", "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces"]
+        "astrology": ["astrology", "zodiac", "horoscope", "retrograde", "tarot", "horoscopes", "zodiac sign", "aries", "taurus", "leo", "virgo", "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces"],
+        "sports": ["sport", "nba", "nfl", "basketball", "football", "baseball", "soccer", "lakers", "lebron", "messi", "ronaldo", "athlete", "championship", "coach"]
     }
     
     keywords = keyword_map.get(slug_lower, [slug_lower])
@@ -181,7 +182,7 @@ def generate_sitemap(db: Session = Depends(get_db)):
     xml_content += '  </url>\n'
     
     # Add Categories
-    categories = ["ai", "politics", "tabloids", "tech", "astrology"]
+    categories = ["ai", "politics", "tabloids", "tech", "astrology", "sports"]
     for cat in categories:
         xml_content += '  <url>\n'
         xml_content += f'    <loc>{base_url}/category/{cat}</loc>\n'

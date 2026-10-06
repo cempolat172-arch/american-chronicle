@@ -21,7 +21,10 @@ RSS_FEEDS = [
     "https://news.google.com/rss/search?q=weird+news+OR+UFO+OR+bizarre+OR+conspiracy&hl=en-US&gl=US&ceid=US:en",
     
     # İnternet Fenomenleri, Viral Olaylar ve TikTok Dramaları
-    "https://news.google.com/rss/search?q=viral+OR+trending+OR+drama&hl=en-US&gl=US&ceid=US:en"
+    "https://news.google.com/rss/search?q=viral+OR+trending+OR+drama&hl=en-US&gl=US&ceid=US:en",
+    
+    # US Sports News (NBA, NFL, vb.)
+    "https://news.google.com/rss/search?q=sports+OR+nba+OR+nfl+OR+basketball+OR+football&hl=en-US&gl=US&ceid=US:en"
 ]
 
 async def fetch_feed(url: str, client: httpx.AsyncClient):
