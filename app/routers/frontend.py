@@ -121,6 +121,13 @@ def read_article(request: Request, slug: str, db: Session = Depends(get_db)):
         }
     )
 
+@router.get("/play")
+def play_game(request: Request):
+    """
+    Renders the custom HTML5 Canvas Agar.io style game.
+    """
+    return templates.TemplateResponse(request, "game_agar.html")
+
 @router.get("/legal")
 def read_legal(request: Request):
     """

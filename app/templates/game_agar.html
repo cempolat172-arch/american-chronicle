@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Chronicle Cell - Play</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #f0f0f0; }
+        canvas { display: block; }
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        .pointer-events-auto { pointer-events: auto; }
+        #grid-bg {
+            background-size: 50px 50px;
+            background-image: linear-gradient(to right, #ddd 1px, transparent 1px), linear-gradient(to bottom, #ddd 1px, transparent 1px);
+        }
+    </style>
+</head>
+<body id="grid-bg">
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="ui-layer" class="flex flex-col justify-between p-4">
+        <div class="flex justify-between items-start pointer-events-auto">
+            <a href="/" class="bg-black text-white px-4 py-2 font-bold uppercase tracking-widest text-xs hover:bg-gray-800 transition shadow-lg">← Back to News</a>
+            <div class="bg-white border-2 border-black px-4 py-2 font-bold uppercase tracking-widest text-xs shadow-md">
+                Score: <span id="score">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="absolute inset-0 bg-black/80 flex items-center justify-center pointer-events-auto z-50 backdrop-blur-sm">
+        <div class="bg-white p-8 border-4 border-black max-w-sm w-full shadow-2xl text-center relative">
+            <h1 class="text-3xl font-black mb-2 uppercase tracking-tighter">Chronicle Cell</h1>
+            <p class="text-gray-600 mb-6 text-xs uppercase tracking-widest font-bold">Eat cells. Grow larger. Survive.</p>
+            <input type="text" id="playerNameInput" placeholder="ENTER YOUR NICKNAME" class="w-full border-2 border-gray-300 p-3 mb-4 text-center font-bold uppercase tracking-widest outline-none focus:border-black transition" maxlength="15" autocomplete="off">
+            <button id="startBtn" class="w-full bg-black text-white font-bold uppercase tracking-widest py-3 hover:bg-gray-800 transition">Start Game</button>
+            <a href="/" class="block mt-4 text-[10px] uppercase text-gray-500 hover:text-black underline">Cancel and Go Back</a>
+        </div>
+    </div>
+    
+    <!-- Game Over Modal -->
+    <div id="gameOverModal" class="absolute inset-0 bg-red-900/90 flex items-center justify-center pointer-events-auto z-50 backdrop-blur-sm hidden">
+        <div class="bg-white p-8 border-4 border-black max-w-sm w-full shadow-2xl text-center">
+            <h1 class="text-5xl font-black mb-2 uppercase tracking-tighter text-red-600">EATEN!</h1>
+            <p class="text-gray-600 mb-6 text-sm font-bold uppercase tracking-widest">You were consumed by a larger cell.</p>
+            <p class="text-3xl font-black mb-6">SCORE: <span id="finalScore">0</span></p>
+            <button id="restartBtn" class="w-full bg-black text-white font-bold uppercase tracking-widest py-3 hover:bg-gray-800 transition mb-3">Play Again</button>
+            <a href="/" class="block mt-2 text-[10px] uppercase text-gray-500 hover:text-black underline">Exit to News</a>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+
+        window.addEventListener('resize', () => {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+        });
+
+        // Game State
+        let isPlaying = false;
+        let animationId;
+        let mouse = { x: width/2, y: height/2 };
+        let camera = { x: 0, y: 0 };
+        
+        const WORLD_SIZE = 3000;
+
+        let player = {
+            x: Math.random() * WORLD_SIZE,
+            y: Math.random() * WORLD_SIZE,
+            radius: 20,
+            color: '#2563eb', // blue-600
+            name: '',
+            speed: 5
+        };
+
+        let foods = [];
+        let bots = [];
+        const FOOD_COUNT = 500;
+        const BOT_COUNT = 25;
+        const COLORS = ['#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f43f5e', '#3b82f6'];
+
+        canvas.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+        
+        canvas.addEventListener('touchmove', (e) => {
+            if(e.touches.length > 0) {
+                mouse.x = e.touches[0].clientX;
+                mouse.y = e.touches[0].clientY;
+            }
+        });
+
+        function initGame(playerName) {
+            player.name = playerName;
+            player.radius = 20;
+            player.x = WORLD_SIZE / 2 + (Math.random() * 500 - 250);
+            player.y = WORLD_SIZE / 2 + (Math.random() * 500 - 250);
+            scoreEl.textContent = '0';
+            
+            foods = [];
+            for (let i = 0; i < FOOD_COUNT; i++) {
+                foods.push(createFood());
+            }
+            
+            bots = [];
+            for (let i = 0; i < BOT_COUNT; i++) {
+                bots.push(createBot());
+            }
+            
+            isPlaying = true;
+            document.getElementById('loginModal').classList.add('hidden');
+            document.getElementById('gameOverModal').classList.add('hidden');
+            
+            loop();
+        }
+
+        function createFood() {
+            return {
+                x: Math.random() * WORLD_SIZE,
+                y: Math.random() * WORLD_SIZE,
+                radius: 4 + Math.random() * 4,
+                color: COLORS[Math.floor(Math.random() * COLORS.length)]
+            };
+        }
+
+        function createBot() {
+            return {
+                x: Math.random() * WORLD_SIZE,
+                y: Math.random() * WORLD_SIZE,
+                radius: 15 + Math.random() * 60, // random sizes
+                color: COLORS[Math.floor(Math.random() * COLORS.length)],
+                name: 'Bot ' + Math.floor(Math.random() * 999),
+                targetX: Math.random() * WORLD_SIZE,
+                targetY: Math.random() * WORLD_SIZE,
+                speed: 1.5 + Math.random() * 1.5
+            };
+        }
+
+        function drawCircle(x, y, r, color) {
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.closePath();
+        }
+
+        function drawText(text, x, y, size) {
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${Math.max(10, size * 0.4)}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = 'black';
+            ctx.strokeText(text, x, y);
+            ctx.fillText(text, x, y);
+        }
+
+        function updatePlayer() {
+            const worldMouseX = mouse.x + camera.x;
+            const worldMouseY = mouse.y + camera.y;
+            
+            const dx = worldMouseX - player.x;
+            const dy = worldMouseY - player.y;
+            const dist = Math.hypot(dx, dy);
+            
+            // Scale speed inversely to size
+            const currentSpeed = player.speed * (20 / Math.max(20, player.radius * 0.8));
+            const actualSpeed = Math.max(1.5, currentSpeed);
+
+            if (dist > 5) {
+                player.x += (dx / dist) * actualSpeed;
+                player.y += (dy / dist) * actualSpeed;
+            }
+            
+            player.x = Math.max(player.radius, Math.min(WORLD_SIZE - player.radius, player.x));
+            player.y = Math.max(player.radius, Math.min(WORLD_SIZE - player.radius, player.y));
+            
+            camera.x = player.x - width / 2;
+            camera.y = player.y - height / 2;
+        }
+
+        function updateBots() {
+            bots.forEach(bot => {
+                const dx = bot.targetX - bot.x;
+                const dy = bot.targetY - bot.y;
+                const dist = Math.hypot(dx, dy);
+                
+                const currentSpeed = bot.speed * (20 / Math.max(20, bot.radius * 0.8));
+                const actualSpeed = Math.max(0.8, currentSpeed);
+
+                if (dist > 5) {
+                    bot.x += (dx / dist) * actualSpeed;
+                    bot.y += (dy / dist) * actualSpeed;
+                } else {
+                    bot.targetX = Math.random() * WORLD_SIZE;
+                    bot.targetY = Math.random() * WORLD_SIZE;
+                }
+                
+                bot.x = Math.max(bot.radius, Math.min(WORLD_SIZE - bot.radius, bot.x));
+                bot.y = Math.max(bot.radius, Math.min(WORLD_SIZE - bot.radius, bot.y));
+            });
+        }
+
+        function checkCollisions() {
+            // Eat food
+            for (let i = foods.length - 1; i >= 0; i--) {
+                const f = foods[i];
+                const dist = Math.hypot(player.x - f.x, player.y - f.y);
+                if (dist < player.radius) {
+                    player.radius = Math.sqrt(player.radius * player.radius + f.radius * f.radius);
+                    foods.splice(i, 1);
+                    foods.push(createFood());
+                    scoreEl.textContent = Math.floor(player.radius - 20);
+                }
+            }
+            
+            // Bots eat food
+            bots.forEach(bot => {
+                for (let i = foods.length - 1; i >= 0; i--) {
+                    const f = foods[i];
+                    if (Math.hypot(bot.x - f.x, bot.y - f.y) < bot.radius) {
+                        bot.radius = Math.sqrt(bot.radius * bot.radius + f.radius * f.radius);
+                        foods.splice(i, 1);
+                        foods.push(createFood());
+                    }
+                }
+            });
+            
+            // Player vs Bots
+            for (let i = bots.length - 1; i >= 0; i--) {
+                const bot = bots[i];
+                const dist = Math.hypot(player.x - bot.x, player.y - bot.y);
+                
+                if (dist < player.radius + bot.radius - (Math.min(player.radius, bot.radius) * 0.3)) {
+                    if (player.radius > bot.radius * 1.1) {
+                        player.radius = Math.sqrt(player.radius * player.radius + bot.radius * bot.radius * 0.5); // gain 50% of bot mass
+                        bots.splice(i, 1);
+                        bots.push(createBot());
+                        scoreEl.textContent = Math.floor(player.radius - 20);
+                    } else if (bot.radius > player.radius * 1.1) {
+                        gameOver();
+                        return;
+                    }
+                }
+            }
+        }
+        
+        function gameOver() {
+            isPlaying = false;
+            cancelAnimationFrame(animationId);
+            document.getElementById('finalScore').textContent = Math.floor(player.radius - 20);
+            document.getElementById('gameOverModal').classList.remove('hidden');
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+            ctx.save();
+            ctx.translate(-camera.x, -camera.y);
+            
+            ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+            ctx.lineWidth = 5;
+            ctx.strokeRect(0, 0, WORLD_SIZE, WORLD_SIZE);
+            
+            foods.forEach(f => drawCircle(f.x, f.y, f.radius, f.color));
+            
+            bots.forEach(bot => {
+                drawCircle(bot.x, bot.y, bot.radius, bot.color);
+                if (bot.radius > 18) drawText(bot.name, bot.x, bot.y, bot.radius);
+            });
+            
+            drawCircle(player.x, player.y, player.radius, player.color);
+            drawText(player.name, player.x, player.y, player.radius);
+            
+            ctx.restore();
+        }
+
+        function loop() {
+            if (!isPlaying) return;
+            updatePlayer();
+            updateBots();
+            checkCollisions();
+            draw();
+            animationId = requestAnimationFrame(loop);
+        }
+
+        document.getElementById('startBtn').addEventListener('click', () => {
+            const nameInput = document.getElementById('playerNameInput');
+            if (!nameInput.value.trim()) {
+                nameInput.classList.add('border-red-500');
+                nameInput.placeholder = "NAME IS REQUIRED!";
+                return;
+            }
+            initGame(nameInput.value.trim());
+        });
+        
+        document.getElementById('restartBtn').addEventListener('click', () => {
+            initGame(player.name);
+        });
+        
+        document.getElementById('playerNameInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') document.getElementById('startBtn').click();
+        });
+        document.getElementById('playerNameInput').addEventListener('input', (e) => {
+            e.target.classList.remove('border-red-500');
+        });
+    </script>
+</body>
+</html>
