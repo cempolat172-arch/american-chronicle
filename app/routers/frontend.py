@@ -22,6 +22,12 @@ def read_index(request: Request, db: Session = Depends(get_db)):
     
     # Fetch bizarre / ultra-interesting news
     bizarre_articles = db.query(NewsArticle).filter(NewsArticle.is_bizarre == True).order_by(NewsArticle.published_at.desc()).limit(4).all()
+    # Get sidebar specific world articles
+    world_conditions = [NewsArticle.content.ilike(f"%{kw}%") for kw in ["world", "global", "international", "nation", "europe", "asia", "middle east", "un", "war", "earthquake", "tsunami", "summit", "crisis"]]
+    world_conditions.extend([NewsArticle.title.ilike(f"%{kw}%") for kw in ["world", "global", "international", "nation", "europe", "asia", "middle east", "un", "war", "earthquake", "tsunami", "summit", "crisis"]])
+    from sqlalchemy import or_
+    world_articles = db.query(NewsArticle).filter(or_(*world_conditions)).order_by(NewsArticle.published_at.desc()).limit(5).all()
+    
     return templates.TemplateResponse(
         request,
         "index.html", 
@@ -29,6 +35,7 @@ def read_index(request: Request, db: Session = Depends(get_db)):
             "articles": latest_articles,
             "breaking": breaking_articles,
             "bizarre": bizarre_articles,
+            "world_articles": world_articles,
             "category": None
         }
     )
@@ -46,7 +53,8 @@ def read_category(request: Request, slug: str, db: Session = Depends(get_db)):
         "tabloids": ["scandal", "hollywood", "celebrity", "gossip", "kardashian", "taylor swift"],
         "tech": ["tech", "apple", "google", "cyber", "elon musk", "software", "startup"],
         "astrology": ["astrology", "zodiac", "horoscope", "retrograde", "tarot", "horoscopes", "zodiac sign", "aries", "taurus", "leo", "virgo", "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces"],
-        "sports": ["sport", "nba", "nfl", "basketball", "football", "baseball", "soccer", "lakers", "lebron", "messi", "ronaldo", "athlete", "championship", "coach"]
+        "sports": ["sport", "nba", "nfl", "basketball", "football", "baseball", "soccer", "lakers", "lebron", "messi", "ronaldo", "athlete", "championship", "coach"],
+        "world": ["world", "global", "international", "nation", "europe", "asia", "middle east", "un", "war", "earthquake", "tsunami", "summit", "crisis"]
     }
     
     keywords = keyword_map.get(slug_lower, [slug_lower])
@@ -64,6 +72,12 @@ def read_category(request: Request, slug: str, db: Session = Depends(get_db)):
     breaking_articles = query.filter(NewsArticle.is_breaking == True).order_by(NewsArticle.published_at.desc()).limit(3).all()
     bizarre_articles = query.filter(NewsArticle.is_bizarre == True).order_by(NewsArticle.published_at.desc()).limit(4).all()
     
+    # Get sidebar specific world articles
+    world_conditions = [NewsArticle.content.ilike(f"%{kw}%") for kw in ["world", "global", "international", "nation", "europe", "asia", "middle east", "un", "war", "earthquake", "tsunami", "summit", "crisis"]]
+    world_conditions.extend([NewsArticle.title.ilike(f"%{kw}%") for kw in ["world", "global", "international", "nation", "europe", "asia", "middle east", "un", "war", "earthquake", "tsunami", "summit", "crisis"]])
+    from sqlalchemy import or_
+    world_articles = db.query(NewsArticle).filter(or_(*world_conditions)).order_by(NewsArticle.published_at.desc()).limit(5).all()
+    
     return templates.TemplateResponse(
         request,
         "index.html", 
@@ -71,6 +85,7 @@ def read_category(request: Request, slug: str, db: Session = Depends(get_db)):
             "articles": latest_articles,
             "breaking": breaking_articles,
             "bizarre": bizarre_articles,
+            "world_articles": world_articles,
             "category": slug_lower
         }
     )
@@ -92,6 +107,12 @@ def search_articles(request: Request, q: str = "", db: Session = Depends(get_db)
     breaking_articles = query.filter(NewsArticle.is_breaking == True).order_by(NewsArticle.published_at.desc()).limit(3).all()
     bizarre_articles = query.filter(NewsArticle.is_bizarre == True).order_by(NewsArticle.published_at.desc()).limit(10).all()
     
+    # Get sidebar specific world articles
+    world_conditions = [NewsArticle.content.ilike(f"%{kw}%") for kw in ["world", "global", "international", "nation", "europe", "asia", "middle east", "un", "war", "earthquake", "tsunami", "summit", "crisis"]]
+    world_conditions.extend([NewsArticle.title.ilike(f"%{kw}%") for kw in ["world", "global", "international", "nation", "europe", "asia", "middle east", "un", "war", "earthquake", "tsunami", "summit", "crisis"]])
+    from sqlalchemy import or_
+    world_articles = db.query(NewsArticle).filter(or_(*world_conditions)).order_by(NewsArticle.published_at.desc()).limit(5).all()
+    
     return templates.TemplateResponse(
         request,
         "index.html", 
@@ -99,6 +120,7 @@ def search_articles(request: Request, q: str = "", db: Session = Depends(get_db)
             "articles": latest_articles,
             "breaking": breaking_articles,
             "bizarre": bizarre_articles,
+            "world_articles": world_articles,
             "category": None,
             "search_query": q
         }
@@ -189,7 +211,7 @@ def generate_sitemap(db: Session = Depends(get_db)):
     xml_content += '  </url>\n'
     
     # Add Categories
-    categories = ["ai", "politics", "tabloids", "tech", "astrology", "sports"]
+    categories = ["ai", "politics", "tabloids", "tech", "astrology", "sports", "world"]
     for cat in categories:
         xml_content += '  <url>\n'
         xml_content += f'    <loc>{base_url}/category/{cat}</loc>\n'
