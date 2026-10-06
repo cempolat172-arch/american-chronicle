@@ -41,11 +41,11 @@ def read_category(request: Request, slug: str, db: Session = Depends(get_db)):
     slug_lower = slug.lower()
     
     keyword_map = {
-        "ai": ["AI", "artificial intelligence", "robot", "chatgpt", "openai"],
+        "ai": ["artificial intelligence", "chatgpt", "openai", "machine learning"],
         "politics": ["politic", "election", "president", "biden", "trump", "senate", "congress", "white house"],
-        "tabloids": ["scandal", "hollywood", "celebrity", "gossip", "drama", "star", "kardashian", "taylor swift"],
+        "tabloids": ["scandal", "hollywood", "celebrity", "gossip", "kardashian", "taylor swift"],
         "tech": ["tech", "apple", "google", "cyber", "elon musk", "software", "startup"],
-        "astrology": ["astrology", "zodiac", "horoscope", "stars", "moon", "retrograde", "aries", "taurus", "gemini", "cancer", "leo", "virgo", "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces", "eclipse", "planet"]
+        "astrology": ["astrology", "zodiac", "horoscope", "retrograde", "tarot", "horoscopes", "zodiac sign", "aries", "taurus", "leo", "virgo", "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces"]
     }
     
     keywords = keyword_map.get(slug_lower, [slug_lower])

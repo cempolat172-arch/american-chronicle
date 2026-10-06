@@ -14,6 +14,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ article.title }} - The American Chronicle</title>
     <meta name="description" content="{{ article.seo_description }}">
+    <!-- Dört Dörtlük SEO: Canonical & Robots -->
+    <link rel="canonical" href="https://theuschronicle.com/article/{{ article.slug }}">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+
+    <!-- Dört Dörtlük SEO: Open Graph (Facebook, LinkedIn, Pinterest) -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="{{ article.title }} - The American Chronicle">
+    <meta property="og:description" content="{{ article.seo_description }}">
+    <meta property="og:url" content="https://theuschronicle.com/article/{{ article.slug }}">
+    <meta property="og:site_name" content="The American Chronicle">
+    <meta property="article:published_time" content="{{ article.published_at.strftime('%Y-%m-%dT%H:%M:%S+00:00') if article.published_at else article.created_at.strftime('%Y-%m-%dT%H:%M:%S+00:00') }}">
+    <meta property="article:modified_time" content="{{ article.created_at.strftime('%Y-%m-%dT%H:%M:%S+00:00') }}">
+    <meta property="og:image" content="{{ article.image_url or ('https://picsum.photos/seed/' ~ article.slug ~ '/800/600?grayscale') }}">
+    <meta property="og:image:width" content="800">
+    <meta property="og:image:height" content="600">
+
+    <!-- Dört Dörtlük SEO: Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ article.title }} - The American Chronicle">
+    <meta name="twitter:description" content="{{ article.seo_description }}">
+    <meta name="twitter:image" content="{{ article.image_url or ('https://picsum.photos/seed/' ~ article.slug ~ '/800/600?grayscale') }}">
+
+    <!-- Dört Dörtlük SEO: Schema.org / JSON-LD Structured Data for Google News & Discover -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "NewsArticle",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://theuschronicle.com/article/{{ article.slug }}"
+      },
+      "headline": "{{ article.title | replace('"', '\"') }}",
+      "image": [
+        "{{ article.image_url or ('https://picsum.photos/seed/' ~ article.slug ~ '/800/600?grayscale') }}"
+      ],
+      "datePublished": "{{ article.published_at.strftime('%Y-%m-%dT%H:%M:%S+00:00') if article.published_at else article.created_at.strftime('%Y-%m-%dT%H:%M:%S+00:00') }}",
+      "dateModified": "{{ article.created_at.strftime('%Y-%m-%dT%H:%M:%S+00:00') }}",
+      "author": {
+        "@type": "Organization",
+        "name": "Chronicle Staff",
+        "url": "https://theuschronicle.com"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "The American Chronicle",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://theuschronicle.com/static/logo.png"
+        }
+      },
+      "description": "{{ article.seo_description | replace('"', '\"') }}"
+    }
+    </script>
+
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f172a'/%3E%3Ctext x='50%25' y='54%25' font-family='Georgia, serif' font-size='34' font-weight='bold' font-style='italic' fill='%23ffffff' text-anchor='middle' dominant-baseline='middle'%3EUS%3C/text%3E%3C/svg%3E" type="image/svg+xml">
     
