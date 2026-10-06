@@ -287,5 +287,85 @@
         }
     </script>
     <script id="dsq-count-scr" src="//theuschronicle.disqus.com/count.js" async></script>
+
+    <!-- Push Notifications Logic -->
+    <div id="notif-banner" class="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 bg-white border-4 border-black p-4 shadow-2xl z-50 transform translate-y-[150%] transition-transform duration-500">
+        <h3 class="font-black uppercase tracking-widest text-lg mb-1">Breaking News Alerts</h3>
+        <p class="text-xs font-sans text-gray-600 mb-4">Never miss a major global event. Allow browser notifications to get live updates.</p>
+        <div class="flex gap-2">
+            <button id="notif-allow" class="flex-1 bg-red-700 text-white text-xs font-bold uppercase tracking-widest py-2 hover:bg-red-600">Enable</button>
+            <button id="notif-dismiss" class="flex-1 bg-gray-200 text-black text-xs font-bold uppercase tracking-widest py-2 hover:bg-gray-300">Not Now</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const banner = document.getElementById('notif-banner');
+            
+            // Check if user already made a choice or natively granted/denied
+            if (Notification.permission === 'default' && !localStorage.getItem('notif_dismissed')) {
+                setTimeout(() => {
+                    banner.classList.remove('translate-y-[150%]');
+                }, 3000);
+            }
+
+            document.getElementById('notif-dismiss').addEventListener('click', () => {
+                localStorage.setItem('notif_dismissed', 'true');
+                banner.classList.add('translate-y-[150%]');
+            });
+
+            document.getElementById('notif-allow').addEventListener('click', async () => {
+                banner.classList.add('translate-y-[150%]');
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    startNotificationPoller();
+                }
+            });
+
+            if (Notification.permission === 'granted') {
+                startNotificationPoller();
+            }
+
+            function startNotificationPoller() {
+                // Initial fetch to set the baseline ID without alerting
+                fetch('/api/latest-breaking')
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data && data.id) {
+                            if (!localStorage.getItem('last_notif_id')) {
+                                localStorage.setItem('last_notif_id', data.id);
+                            }
+                        }
+                    }).catch(err => console.error(err));
+
+                // Poll every 60 seconds
+                setInterval(() => {
+                    fetch('/api/latest-breaking')
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data && data.id) {
+                                const lastId = parseInt(localStorage.getItem('last_notif_id') || '0');
+                                if (data.id > lastId) {
+                                    localStorage.setItem('last_notif_id', data.id);
+                                    showNotification(data.title, data.slug);
+                                }
+                            }
+                        }).catch(err => console.error(err));
+                }, 60000);
+            }
+
+            function showNotification(title, slug) {
+                const notif = new Notification("🚨 BREAKING NEWS", {
+                    body: title,
+                    icon: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"%3E%3Crect width="64" height="64" rx="14" fill="%23b91c1c"/%3E%3Ctext x="50%25" y="54%25" font-family="Georgia" font-size="34" font-weight="bold" fill="%23ffffff" text-anchor="middle" dominant-baseline="middle"%3EUS%3C/text%3E%3C/svg%3E',
+                    requireInteraction: true
+                });
+                notif.onclick = function() {
+                    window.open('/article/' + slug, '_blank');
+                    notif.close();
+                };
+            }
+        });
+    </script>
 </body>
 </html>
