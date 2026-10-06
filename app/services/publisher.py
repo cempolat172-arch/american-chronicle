@@ -1,5 +1,6 @@
 import re
 import logging
+from datetime import datetime, timezone
 from typing import Optional
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
@@ -113,6 +114,9 @@ async def run_news_pipeline() -> dict:
             if not check_article_exists(db, original_url):
                 new_articles.append(raw_news)
                 
+        # Sort by published date descending (newest first) so the site is always fresh
+        new_articles.sort(key=lambda x: x.get('published') or datetime.now(timezone.utc), reverse=True)
+        
         # Step 2: Limit batch size to 5 to avoid Vercel timeouts (10s) and Gemini RPM limits (15/min)
         batch = new_articles[:5]
         logger.info(f"Processing a fast batch of {len(batch)} new articles out of {len(new_articles)} pending...")
