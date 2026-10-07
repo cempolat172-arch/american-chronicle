@@ -188,6 +188,48 @@ def get_latest_breaking(db: Session = Depends(get_db)):
         return {"id": latest.id, "title": latest.title, "slug": latest.slug}
     return {"id": 0}
 
+
+@router.get("/feed.xml")
+def generate_rss_feed(db: Session = Depends(get_db)):
+    """
+    Generates a standard RSS 2.0 feed required for Google News Publisher Center approval.
+    """
+    articles = db.query(NewsArticle).order_by(NewsArticle.published_at.desc()).limit(50).all()
+    
+    base_url = "https://theuschronicle.com"
+    
+    from email.utils import format_datetime
+    from datetime import datetime, timezone
+    
+    xml_content = '<?xml version="1.0" encoding="UTF-8" ?>\n'
+    xml_content += '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/">\n'
+    xml_content += '  <channel>\n'
+    xml_content += '    <title>The American Chronicle</title>\n'
+    xml_content += f'    <link>{base_url}</link>\n'
+    xml_content += '    <description>The premier digital destination for uncensored, high-impact journalism in the United States.</description>\n'
+    xml_content += '    <language>en-us</language>\n'
+    xml_content += f'    <atom:link href="{base_url}/feed.xml" rel="self" type="application/rss+xml" />\n'
+    
+    for article in articles:
+        pub_date = article.published_at if article.published_at else datetime.now(timezone.utc)
+        rfc2822_date = format_datetime(pub_date)
+        
+        xml_content += '    <item>\n'
+        xml_content += f'      <title>{article.title.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")}</title>\n'
+        xml_content += f'      <link>{base_url}/article/{article.slug}</link>\n'
+        xml_content += f'      <guid isPermaLink="true">{base_url}/article/{article.slug}</guid>\n'
+        xml_content += f'      <pubDate>{rfc2822_date}</pubDate>\n'
+        xml_content += f'      <description>{article.seo_description.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")}</description>\n'
+        
+        image = article.image_url or f"https://picsum.photos/seed/{article.slug}/800/600?grayscale"
+        xml_content += f'      <media:content url="{image}" medium="image" />\n'
+        xml_content += '    </item>\n'
+        
+    xml_content += '  </channel>\n'
+    xml_content += '</rss>'
+    
+    return Response(content=xml_content, media_type="application/rss+xml")
+
 @router.get("/sitemap.xml")
 def generate_sitemap(db: Session = Depends(get_db)):
     """
