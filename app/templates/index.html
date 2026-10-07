@@ -358,6 +358,7 @@
         });
     <script id="dsq-count-scr" src="//theuschronicle.disqus.com/count.js" async></script>
 
+    
     <!-- Push Notifications Logic -->
     <div id="notif-banner" class="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 bg-white border-4 border-black p-4 shadow-2xl z-50 transform translate-y-[150%] transition-transform duration-500">
         <h3 class="font-black uppercase tracking-widest text-lg mb-1">Breaking News Alerts</h3>
@@ -372,8 +373,14 @@
         document.addEventListener('DOMContentLoaded', () => {
             const banner = document.getElementById('notif-banner');
             
+            // Check if browser supports notifications
+            if (!("Notification" in window)) {
+                console.log("This browser does not support desktop notification");
+                return;
+            }
+            
             // Check if user already made a choice or natively granted/denied
-            if (Notification.permission === 'default' && !localStorage.getItem('notif_dismissed')) {
+            if (window.Notification.permission === 'default' && !localStorage.getItem('notif_dismissed')) {
                 setTimeout(() => {
                     banner.classList.remove('translate-y-[150%]');
                 }, 3000);
@@ -386,13 +393,17 @@
 
             document.getElementById('notif-allow').addEventListener('click', async () => {
                 banner.classList.add('translate-y-[150%]');
-                const permission = await Notification.requestPermission();
-                if (permission === 'granted') {
-                    startNotificationPoller();
+                try {
+                    const permission = await window.Notification.requestPermission();
+                    if (permission === 'granted') {
+                        startNotificationPoller();
+                    }
+                } catch (e) {
+                    console.error("Notification permission error:", e);
                 }
             });
 
-            if (Notification.permission === 'granted') {
+            if (window.Notification.permission === 'granted') {
                 startNotificationPoller();
             }
 
@@ -425,17 +436,20 @@
             }
 
             function showNotification(title, slug) {
-                const notif = new Notification("🚨 BREAKING NEWS", {
-                    body: title,
-                    icon: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"%3E%3Crect width="64" height="64" rx="14" fill="%23b91c1c"/%3E%3Ctext x="50%25" y="54%25" font-family="Georgia" font-size="34" font-weight="bold" fill="%23ffffff" text-anchor="middle" dominant-baseline="middle"%3EUS%3C/text%3E%3C/svg%3E',
-                    requireInteraction: true
-                });
-                notif.onclick = function() {
-                    window.open('/article/' + slug, '_blank');
-                    notif.close();
-                };
+                try {
+                    const notif = new window.Notification("🚨 BREAKING NEWS", {
+                        body: title,
+                        icon: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"%3E%3Crect width="64" height="64" rx="14" fill="%23b91c1c"/%3E%3Ctext x="50%25" y="54%25" font-family="Georgia" font-size="34" font-weight="bold" fill="%23ffffff" text-anchor="middle" dominant-baseline="middle"%3EUS%3C/text%3E%3C/svg%3E',
+                        requireInteraction: true
+                    });
+                    notif.onclick = function() {
+                        window.open('/article/' + slug, '_blank');
+                        notif.close();
+                    };
+                } catch(e) {
+                    console.error("Error showing notification:", e);
+                }
             }
         });
     </script>
 </body>
-</html>
