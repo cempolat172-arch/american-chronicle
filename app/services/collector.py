@@ -8,23 +8,26 @@ import logging
 logger = logging.getLogger(__name__)
 
 RSS_FEEDS = [
-    # US Top Stories (Tüm büyük Amerikan ajansları: CNN, Fox, NYT, Washington Post vb. en önemli haberleri seçer)
+    # US Top Stories
     "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en",
     
-    # Hollywood Skandalları ve Ünlü Dedikoduları (Tüm ABD magazin basını)
-    "https://news.google.com/rss/search?q=celebrity+scandal+OR+hollywood+drama+OR+gossip&hl=en-US&gl=US&ceid=US:en",
+    # Hollywood Skandalları (Only last 24 hours)
+    "https://news.google.com/rss/search?q=celebrity+scandal+OR+hollywood+drama+OR+gossip+when:1d&hl=en-US&gl=US&ceid=US:en",
     
-    # Astroloji, Burçlar ve Spiritüel Haberler (Tüm ABD astroloji kaynakları)
-    "https://news.google.com/rss/search?q=astrology+OR+zodiac+OR+horoscope&hl=en-US&gl=US&ceid=US:en",
+    # Astroloji (Only last 24 hours)
+    "https://news.google.com/rss/search?q=astrology+OR+zodiac+OR+horoscope+when:1d&hl=en-US&gl=US&ceid=US:en",
     
-    # UFO, Tuhaf Olaylar ve Komplo Teorileri
-    "https://news.google.com/rss/search?q=weird+news+OR+UFO+OR+bizarre+OR+conspiracy&hl=en-US&gl=US&ceid=US:en",
+    # UFO, Tuhaf Olaylar (Only last 24 hours)
+    "https://news.google.com/rss/search?q=weird+news+OR+UFO+OR+bizarre+OR+conspiracy+when:1d&hl=en-US&gl=US&ceid=US:en",
     
-    # İnternet Fenomenleri, Viral Olaylar ve TikTok Dramaları
-    "https://news.google.com/rss/search?q=viral+OR+trending+OR+drama&hl=en-US&gl=US&ceid=US:en",
+    # Viral Olaylar (Only last 24 hours)
+    "https://news.google.com/rss/search?q=viral+OR+trending+OR+drama+when:1d&hl=en-US&gl=US&ceid=US:en",
     
-    # US Sports News (NBA, NFL, vb.)
-    "https://news.google.com/rss/search?q=sports+OR+nba+OR+nfl+OR+basketball+OR+football&hl=en-US&gl=US&ceid=US:en"
+    # US Sports News (Only last 24 hours)
+    "https://news.google.com/rss/search?q=sports+OR+nba+OR+nfl+OR+basketball+OR+football+when:1d&hl=en-US&gl=US&ceid=US:en",
+    
+    # World News (Dünya Haberleri)
+    "https://news.google.com/rss/headlines/section/topic/WORLD?hl=en-US&gl=US&ceid=US:en"
 ]
 
 async def fetch_feed(url: str, client: httpx.AsyncClient):

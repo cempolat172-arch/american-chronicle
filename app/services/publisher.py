@@ -115,7 +115,7 @@ async def run_news_pipeline() -> dict:
                 new_articles.append(raw_news)
                 
         # Sort by published date descending (newest first) so the site is always fresh
-        new_articles.sort(key=lambda x: x.get('published') or datetime.now(timezone.utc), reverse=True)
+        new_articles.sort(key=lambda x: x.get('published') or datetime.min.replace(tzinfo=timezone.utc), reverse=True)
         
         # Step 2: Limit batch size to 5 to avoid Vercel timeouts (10s) and Gemini RPM limits (15/min)
         batch = new_articles[:5]
