@@ -1,5 +1,5 @@
 import logging
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Header, Depends
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Header, Depends, Response
 from typing import Optional
 from app.services.publisher import run_news_pipeline
 from app.config import settings
@@ -13,13 +13,17 @@ def verify_api_key(x_api_key: Optional[str] = Header(None)):
         raise HTTPException(status_code=401, detail="Yetkisiz erişim. Geçersiz API anahtarı.")
 
 @router.api_route("/trigger-news", methods=["GET", "POST"], dependencies=[Depends(verify_api_key)])
-async def trigger_news_secure():
+async def trigger_news_secure(response: Response):
     """
     Manuel Haber Tetikleme Endpoint'i (Korumalı).
     Vercel (Serverless) platformları BackgroundTasks desteklemediği için 
-    işlemi 5'li küçük paketler halinde bekleterek yapar (max 3 saniye).
+    işlemi 2'li küçük paketler halinde bekleterek yapar (max 3 saniye).
     Kullanım: POST /api/trigger-news -H "x-api-key: kronik-admin-123"
     """
+    # Prevent Vercel from caching this endpoint!
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    
     logger.info("Cron trigger received. Executing fast sync batch (Serverless safe).")
     try:
         result = await run_news_pipeline()

@@ -118,8 +118,8 @@ async def run_news_pipeline() -> dict:
         new_articles.sort(key=lambda x: x.get('published') or datetime.min.replace(tzinfo=timezone.utc), reverse=True)
         
         # Step 2: Limit batch size to 5 to avoid Vercel timeouts (10s) and Gemini RPM limits (15/min)
-        batch = new_articles[:5]
-        logger.info(f"Processing a fast batch of {len(batch)} new articles out of {len(new_articles)} pending...")
+        batch = new_articles[:2]
+        logger.info(f"Processing a safe batch of {len(batch)} new articles to avoid Gemini rate limits...")
         
         # Step 3: Process AI generation concurrently
         import asyncio
