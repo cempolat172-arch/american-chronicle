@@ -4,6 +4,49 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import NewsArticle
 
+
+import time
+import httpx
+import xml.etree.ElementTree as ET
+
+_cached_trends = None
+_cached_trends_time = 0
+
+def get_live_trends():
+    global _cached_trends, _cached_trends_time
+    # Cache for 2 hours (7200 seconds)
+    if _cached_trends and (time.time() - _cached_trends_time < 7200):
+        return _cached_trends
+        
+    try:
+        # Fallback default trends if network fails
+        default_trends = ["2026Elections", "BreakingNews", "ArtificialIntelligence", "HollywoodScandal", "WorldCrisis", "StockMarket"]
+        
+        # Use sync HTTPX to fetch fast
+        with httpx.Client(timeout=3.0) as client:
+            resp = client.get("https://trends.google.com/trends/trendingsearches/daily/rss?geo=US")
+            if resp.status_code == 200:
+                root = ET.fromstring(resp.text)
+                trends = []
+                for item in root.findall(".//item/title"):
+                    if item.text:
+                        # Clean up trend (remove spaces, uppercase first letter)
+                        trend_word = "".join(word.capitalize() for word in item.text.split())
+                        if trend_word and trend_word not in trends:
+                            trends.append(trend_word)
+                        if len(trends) >= 7:
+                            break
+                if trends:
+                    _cached_trends = trends
+                    _cached_trends_time = time.time()
+                    return trends
+    except Exception as e:
+        print("Error fetching trends:", e)
+        
+    _cached_trends = default_trends
+    _cached_trends_time = time.time()
+    return _cached_trends
+
 router = APIRouter(tags=["frontend"])
 
 templates = Jinja2Templates(directory="app/templates")
@@ -36,7 +79,8 @@ def read_index(request: Request, db: Session = Depends(get_db)):
             "breaking": breaking_articles,
             "bizarre": bizarre_articles,
             "world_articles": world_articles,
-            "category": None
+            "category": None,
+            "live_trends": get_live_trends()
         }
     )
 
@@ -86,7 +130,8 @@ def read_category(request: Request, slug: str, db: Session = Depends(get_db)):
             "breaking": breaking_articles,
             "bizarre": bizarre_articles,
             "world_articles": world_articles,
-            "category": slug_lower
+            "category": slug_lower,
+            "live_trends": get_live_trends()
         }
     )
 
@@ -122,6 +167,7 @@ def search_articles(request: Request, q: str = "", db: Session = Depends(get_db)
             "bizarre": bizarre_articles,
             "world_articles": world_articles,
             "category": None,
+            "live_trends": get_live_trends(),
             "search_query": q
         }
     )
@@ -139,7 +185,8 @@ def read_article(request: Request, slug: str, db: Session = Depends(get_db)):
         request,
         "article.html", 
         {
-            "article": article
+            "article": article,
+            "live_trends": get_live_trends()
         }
     )
 
