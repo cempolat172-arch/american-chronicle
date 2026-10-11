@@ -14,36 +14,81 @@ _cached_trends_time = 0
 
 def get_live_trends():
     global _cached_trends, _cached_trends_time
-    # Cache for 2 hours (7200 seconds)
-    if _cached_trends and (time.time() - _cached_trends_time < 7200):
+    # Cache for 1 hour (3600 seconds)
+    if _cached_trends and (time.time() - _cached_trends_time < 3600):
         return _cached_trends
         
+    # High-volume baseline search trends for Google SEO
+    baseline_trends = [
+        "Trump2026",
+        "MiddleEastCrisis",
+        "CollegeFootball",
+        "MarvinHarrisonJr",
+        "DOJInvestigation",
+        "ElonMusk",
+        "AIRevolution",
+        "StockMarket"
+    ]
+    
     try:
-        # Fallback default trends if network fails
-        default_trends = ["2026Elections", "BreakingNews", "ArtificialIntelligence", "HollywoodScandal", "WorldCrisis", "StockMarket"]
-        
-        # Use sync HTTPX to fetch fast
-        with httpx.Client(timeout=3.0) as client:
-            resp = client.get("https://trends.google.com/trends/trendingsearches/daily/rss?geo=US")
+        # Fetch real-time US Top Stories from Google News RSS (always returns 200 OK)
+        with httpx.Client(timeout=4.0) as client:
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+            resp = client.get("https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en", headers=headers)
             if resp.status_code == 200:
                 root = ET.fromstring(resp.text)
-                trends = []
-                for item in root.findall(".//item/title"):
+                titles = []
+                for item in root.findall(".//item/title")[:15]:
                     if item.text:
-                        # Clean up trend (remove spaces, uppercase first letter)
-                        trend_word = "".join(word.capitalize() for word in item.text.split())
-                        if trend_word and trend_word not in trends:
-                            trends.append(trend_word)
-                        if len(trends) >= 7:
+                        titles.append(item.text)
+                
+                if titles:
+                    import re
+                    extracted = []
+                    # High-volume search entity mappings
+                    keyword_mappings = [
+                        ("Trump", "Trump2026"),
+                        ("Ukraine", "UkraineCrisis"),
+                        ("Houthi", "MiddleEastCrisis"),
+                        ("Riyadh", "MiddleEastConflict"),
+                        ("Saudi", "SaudiCoalition"),
+                        ("Justice Department", "DOJInvestigation"),
+                        ("DOJ", "DOJInvestigation"),
+                        ("Hurricane", "HurricaneWarning"),
+                        ("Harrison", "MarvinHarrisonJr"),
+                        ("College", "CollegeFootball"),
+                        ("Football", "CollegeFootball"),
+                        ("NFL", "NFLHighlights"),
+                        ("Musk", "ElonMusk"),
+                        ("Starlink", "StarlinkMusk"),
+                        ("AI", "AIRevolution"),
+                        ("Economy", "USStockMarket"),
+                        ("Election", "2026Elections"),
+                        ("Shooting", "BreakingAlert")
+                    ]
+                    
+                    combined = " ".join(titles)
+                    for key, tag in keyword_mappings:
+                        if re.search(r'\b' + re.escape(key) + r'\b', combined, re.IGNORECASE):
+                            if tag not in extracted:
+                                extracted.append(tag)
+                    
+                    # Fill remainder with high-demand trends
+                    for base in baseline_trends:
+                        if base not in extracted:
+                            extracted.append(base)
+                        if len(extracted) >= 8:
                             break
-                if trends:
-                    _cached_trends = trends
+                            
+                    _cached_trends = extracted[:8]
                     _cached_trends_time = time.time()
-                    return trends
+                    return _cached_trends
     except Exception as e:
-        print("Error fetching trends:", e)
+        logger.error(f"Error fetching live Google trends: {e}")
         
-    _cached_trends = default_trends
+    _cached_trends = baseline_trends
     _cached_trends_time = time.time()
     return _cached_trends
 
@@ -138,15 +183,27 @@ def read_category(request: Request, slug: str, db: Session = Depends(get_db)):
 @router.get("/search")
 def search_articles(request: Request, q: str = "", db: Session = Depends(get_db)):
     """
-    Renders search results across all articles matching the query.
+    Renders search results across all articles matching the query with smart fuzzy tag matching.
     """
     query = db.query(NewsArticle)
     
     if q.strip():
         search_term = q.strip()
-        query = query.filter(
-            (NewsArticle.content.ilike(f"%{search_term}%")) | (NewsArticle.title.ilike(f"%{search_term}%"))
-        )
+        import re
+        from sqlalchemy import or_
+        
+        # Split camelCase or hashtags (e.g. Trump2026 -> Trump, DOJInvestigation -> DOJ, Investigation)
+        sub_terms = [w for w in re.findall(r"[A-Z]?[a-z]+|[A-Z]+(?=[A-Z][a-z]|\d|\W|$)", search_term) if len(w) > 2 and not w.isdigit()]
+        
+        filters = [
+            NewsArticle.content.ilike(f"%{search_term}%"),
+            NewsArticle.title.ilike(f"%{search_term}%")
+        ]
+        for st in sub_terms:
+            filters.append(NewsArticle.title.ilike(f"%{st}%"))
+            filters.append(NewsArticle.content.ilike(f"%{st}%"))
+            
+        query = query.filter(or_(*filters))
     
     latest_articles = query.filter(NewsArticle.is_bizarre == False).order_by(NewsArticle.published_at.desc()).limit(20).all()
     breaking_articles = query.filter(NewsArticle.is_breaking == True).order_by(NewsArticle.published_at.desc()).limit(3).all()
