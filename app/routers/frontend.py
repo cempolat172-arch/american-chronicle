@@ -18,16 +18,16 @@ def get_live_trends():
     if _cached_trends and (time.time() - _cached_trends_time < 3600):
         return _cached_trends
         
-    # High-volume baseline search trends for Google SEO (October 13, 2026)
+    # High-volume baseline search trends for Google SEO (October 15, 2026)
     baseline_trends = [
-        "BillsVsRams",
-        "RJMitte",
-        "SelmaBlair",
-        "Q3Earnings",
-        "SalmonDNA",
-        "IlhanOmarRaid",
-        "Trump2026",
-        "MondayNightFootball"
+        "TrumpAlaskaRally",
+        "SocialSecurityCOLA",
+        "KatieZacharia",
+        "AlexDeBrincat",
+        "KimberlyGuilfoyle",
+        "Midterms2026",
+        "InflationSurge",
+        "RedWings91M"
     ]
     
     try:
@@ -49,18 +49,19 @@ def get_live_trends():
                     extracted = []
                     # High-volume search entity mappings
                     keyword_mappings = [
+                        ("Alaska", "TrumpAlaskaRally"),
+                        ("Rally", "TrumpAlaskaRally"),
+                        ("COLA", "SocialSecurityCOLA"),
+                        ("Social Security", "SocialSecurityCOLA"),
+                        ("Inflation", "InflationSurge"),
+                        ("Zacharia", "KatieZacharia"),
+                        ("Press Secretary", "KatieZacharia"),
+                        ("DeBrincat", "AlexDeBrincat"),
+                        ("Red Wings", "AlexDeBrincat"),
+                        ("Guilfoyle", "KimberlyGuilfoyle"),
+                        ("Ambassador", "KimberlyGuilfoyle"),
                         ("Bills", "BillsVsRams"),
-                        ("Rams", "BillsVsRams"),
-                        ("Allen", "BillsVsRams"),
                         ("Mitte", "RJMitte"),
-                        ("Breaking Bad", "RJMitte"),
-                        ("Blair", "SelmaBlair"),
-                        ("Selma", "SelmaBlair"),
-                        ("Earnings", "Q3Earnings"),
-                        ("Wall Street", "Q3Earnings"),
-                        ("PDRN", "SalmonDNA"),
-                        ("Salmon", "SalmonDNA"),
-                        ("Skincare", "SalmonDNA"),
                         ("Omar", "IlhanOmarRaid"),
                         ("Holiday", "ColumbusDay2026"),
                         ("Simon", "HurricaneSimon"),
