@@ -61,6 +61,11 @@ def get_live_trends():
                         ("Tren de Aragua", "TrenDeAraguaRaid"),
                         ("Aragua", "TrenDeAraguaRaid"),
                         ("Character.ai", "CharacterAI"),
+                        ("Dudus", "DiddyPrisonFight"),
+                        ("Coke", "DiddyPrisonFight"),
+                        ("Shower Posse", "DiddyPrisonFight"),
+                        ("Centrifuge", "MOABBomb"),
+                        ("Pickaxe", "MOABBomb"),
                         ("Frightgeist", "Frightgeist2026"),
                         ("Halloween", "Frightgeist2026"),
                         ("Costume", "HalloweenCostumes"),
@@ -153,7 +158,7 @@ def read_index(request: Request, db: Session = Depends(get_db)):
     breaking_articles = db.query(NewsArticle).filter(NewsArticle.is_breaking == True).order_by(NewsArticle.published_at.desc()).limit(3).all()
     
     # Fetch bizarre / ultra-interesting news
-    bizarre_articles = db.query(NewsArticle).filter(NewsArticle.is_bizarre == True).order_by(NewsArticle.published_at.desc()).limit(4).all()
+    bizarre_articles = db.query(NewsArticle).order_by(NewsArticle.published_at.desc()).limit(8).all()
     # Get sidebar specific world articles
     world_conditions = [NewsArticle.content.ilike(f"%{kw}%") for kw in ["world", "global", "international", "nation", "europe", "asia", "middle east", "un", "war", "earthquake", "tsunami", "summit", "crisis"]]
     world_conditions.extend([NewsArticle.title.ilike(f"%{kw}%") for kw in ["world", "global", "international", "nation", "europe", "asia", "middle east", "un", "war", "earthquake", "tsunami", "summit", "crisis"]])
