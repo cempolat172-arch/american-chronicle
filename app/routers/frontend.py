@@ -18,16 +18,16 @@ def get_live_trends():
     if _cached_trends and (time.time() - _cached_trends_time < 3600):
         return _cached_trends
         
-    # High-volume baseline search trends for Google SEO (October 15, 2026)
+    # High-volume baseline search trends for Google SEO (October 15, 2026 Midday)
     baseline_trends = [
-        "TrumpAlaskaRally",
-        "SocialSecurityCOLA",
-        "KatieZacharia",
-        "AlexDeBrincat",
-        "KimberlyGuilfoyle",
-        "Midterms2026",
-        "InflationSurge",
-        "RedWings91M"
+        "Frightgeist2026",
+        "DodgersVsBrewers",
+        "MedicareEnrollment",
+        "VikingsUndefeated",
+        "BernieSandersTour",
+        "HalloweenCostumes",
+        "NLCSPlayoffs",
+        "TrumpAlaskaRally"
     ]
     
     try:
@@ -49,9 +49,20 @@ def get_live_trends():
                     extracted = []
                     # High-volume search entity mappings
                     keyword_mappings = [
+                        ("Frightgeist", "Frightgeist2026"),
+                        ("Halloween", "Frightgeist2026"),
+                        ("Costume", "HalloweenCostumes"),
+                        ("Dodgers", "DodgersVsBrewers"),
+                        ("Brewers", "DodgersVsBrewers"),
+                        ("NLCS", "NLCSPlayoffs"),
+                        ("Ohtani", "DodgersVsBrewers"),
+                        ("Medicare", "MedicareEnrollment"),
+                        ("Enrollment", "MedicareEnrollment"),
+                        ("Vikings", "VikingsUndefeated"),
+                        ("Minnesota", "VikingsUndefeated"),
+                        ("Bernie", "BernieSandersTour"),
+                        ("Sanders", "BernieSandersTour"),
                         ("Alaska", "TrumpAlaskaRally"),
-                        ("Rally", "TrumpAlaskaRally"),
-                        ("COLA", "SocialSecurityCOLA"),
                         ("Social Security", "SocialSecurityCOLA"),
                         ("Inflation", "InflationSurge"),
                         ("Zacharia", "KatieZacharia"),
