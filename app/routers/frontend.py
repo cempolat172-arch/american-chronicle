@@ -439,3 +439,16 @@ def generate_sitemap(db: Session = Depends(get_db)):
     xml_content += '</urlset>'
     
     return Response(content=xml_content, media_type="application/xml")
+
+
+@router.get("/robots.txt")
+def get_robots_txt():
+    """
+    Returns standard robots.txt directing search engines to sitemap.xml
+    """
+    robots_content = """User-agent: *
+Allow: /
+
+Sitemap: https://theuschronicle.com/sitemap.xml
+"""
+    return Response(content=robots_content, media_type="text/plain")
