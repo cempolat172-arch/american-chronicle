@@ -18,16 +18,16 @@ def get_live_trends():
     if _cached_trends and (time.time() - _cached_trends_time < 3600):
         return _cached_trends
         
-    # High-volume baseline search trends for Google SEO (October 16, 2026)
+    # High-volume baseline search trends for Google SEO (October 16, 2026 Evening)
     baseline_trends = [
-        "MOABBomb",
-        "DiddyPrisonFight",
-        "RealMadridVsRoma",
-        "TrenDeAraguaRaid",
-        "CharacterAI",
-        "Frightgeist2026",
+        "WorldSeries2026",
+        "SamDarnoldMVP",
+        "MalibuFire",
+        "ExecutivePrivilege",
+        "EarlyVoting2026",
         "DodgersVsBrewers",
-        "USMilitaryStrike"
+        "BoNixBroncos",
+        "BrysonFire"
     ]
     
     try:
@@ -49,9 +49,19 @@ def get_live_trends():
                     extracted = []
                     # High-volume search entity mappings
                     keyword_mappings = [
+                        ("World Series", "WorldSeries2026"),
+                        ("Dodgers", "WorldSeries2026"),
+                        ("Darnold", "SamDarnoldMVP"),
+                        ("Nix", "BoNixBroncos"),
+                        ("Malibu", "MalibuFire"),
+                        ("Bryson", "BrysonFire"),
+                        ("Wildfire", "MalibuFire"),
+                        ("Privilege", "ExecutivePrivilege"),
+                        ("Kennedy", "ExecutivePrivilege"),
+                        ("Early Voting", "EarlyVoting2026"),
+                        ("Turnout", "EarlyVoting2026"),
                         ("MOAB", "MOABBomb"),
-                        ("Iran", "USMilitaryStrike"),
-                        ("Bomb", "MOABBomb"),
+                        ("Diddy", "DiddyPrisonFight"),
                         ("Diddy", "DiddyPrisonFight"),
                         ("Combs", "DiddyPrisonFight"),
                         ("Fort Dix", "DiddyPrisonFight"),
