@@ -23,14 +23,14 @@ def get_live_trends():
         
     # High-volume baseline search trends for Google SEO (October 16-17, 2026)
     baseline_trends = [
-        "EarlyVoting2026",
-        "BendOregonHero",
-        "KatieZacharia",
-        "UniversalCartAI",
-        "WorldSeries2026",
-        "MalibuFire",
-        "SamDarnoldMVP",
-        "Frightgeist2026"
+        "StraitOfHormuz",
+        "OhioStateVsIndiana",
+        "NorteFire",
+        "Bitcoin81400",
+        "TrumpMidterms",
+        "GTA6Leaks",
+        "BamaVsTennessee",
+        "EarlyVoting2026"
     ]
     
     try:
@@ -52,6 +52,22 @@ def get_live_trends():
                     extracted = []
                     # High-volume search entity mappings
                     keyword_mappings = [
+                        ("Hormuz", "StraitOfHormuz"),
+                        ("Iran", "StraitOfHormuz"),
+                        ("Indiana", "OhioStateVsIndiana"),
+                        ("Ohio State", "OhioStateVsIndiana"),
+                        ("Buckeyes", "OhioStateVsIndiana"),
+                        ("Hoosiers", "OhioStateVsIndiana"),
+                        ("Tennessee", "BamaVsTennessee"),
+                        ("Alabama", "BamaVsTennessee"),
+                        ("Norte", "NorteFire"),
+                        ("Orange County", "NorteFire"),
+                        ("Wildfire", "NorteFire"),
+                        ("Bitcoin", "Bitcoin81400"),
+                        ("Wall Street", "WallStreetJitters"),
+                        ("GTA", "GTA6Leaks"),
+                        ("Rockstar", "GTA6Leaks"),
+                        ("Vice City", "GTA6Leaks"),
                         ("Bend", "BendOregonHero"),
                         ("Silver Rail", "BendOregonHero"),
                         ("Zacharia", "KatieZacharia"),
