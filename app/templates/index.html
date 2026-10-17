@@ -247,7 +247,7 @@
                                     {{ article.title }}
                                 </h3>
                                 <p class="text-sm text-gray-600 line-clamp-4 leading-relaxed mb-4">
-                                    {{ article.seo_description or article.content[:150] ~ '...' }}
+                                    {{ article.seo_description or (article.content | replace('#', '') | truncate(150)) }}
                                 </p>
                                 <div class="flex gap-2" onclick="event.preventDefault();">
                                     <button onclick="submitReaction({{ article.id }}, 'shock', this)" class="flex items-center gap-1 px-2 py-1 bg-white border border-gray-300 hover:bg-gray-100 transition text-[10px] font-sans text-gray-600 shadow-sm">
@@ -287,7 +287,67 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 
-                <!-- Trend 1: World Series 2026 & Dodgers Survival -->
+                <!-- Trend 1: Early Voting Tsunami -->
+                <article class="bg-white border-2 border-black p-5 shadow-sm hover:shadow-md transition">
+                    <span class="text-[10px] font-black text-emerald-700 uppercase tracking-widest block mb-1">🗳️ 1M+ SEARCHES | MIDTERM TURNOUT TSUNAMI</span>
+                    <h3 class="font-serif font-bold text-xl leading-snug mb-3">
+                        <a href="/article/early-voting-tsunami-millions-flood-polling-stations-record-breaking-midterm-turnout-2026" class="hover:text-emerald-700 hover:underline">Early Voting Tsunami: Millions Flood Polling Stations in Record-Breaking Midterm Turnout</a>
+                    </h3>
+                    <p class="text-xs font-sans text-gray-700 leading-relaxed mb-4">
+                        Citizens shatter all-time midterm voting records across Georgia, North Carolina, and Pennsylvania as early in-person polling opens with long lines and surging independent participation.
+                    </p>
+                    <div class="border-t border-gray-200 pt-3 text-[10px] font-sans text-gray-500 uppercase tracking-wider flex justify-between items-center">
+                        <span class="font-bold text-black">SEO Keywords:</span>
+                        <span>#EarlyVoting2026 #MidtermTurnout #GeorgiaVoting</span>
+                    </div>
+                </article>
+
+                <!-- Trend 2: Bend Oregon Hero Bystander -->
+                <article class="bg-white border-2 border-black p-5 shadow-sm hover:shadow-md transition">
+                    <span class="text-[10px] font-black text-blue-700 uppercase tracking-widest block mb-1">🦸 800K+ SEARCHES | BEND OREGON HERO</span>
+                    <h3 class="font-serif font-bold text-xl leading-snug mb-3">
+                        <a href="/article/hero-of-bend-bystander-disarms-shooter-silver-rail-elementary-2026" class="hover:text-blue-700 hover:underline">Hero of Bend: Brave Bystander Disarms Shooter at Silver Rail Elementary School</a>
+                    </h3>
+                    <p class="text-xs font-sans text-gray-700 leading-relaxed mb-4">
+                        A courageous unarmed citizen charges and neutralizes an armed teenage shooter at Silver Rail Elementary in Bend, Oregon, preventing what police confirm was an imminent catastrophe.
+                    </p>
+                    <div class="border-t border-gray-200 pt-3 text-[10px] font-sans text-gray-500 uppercase tracking-wider flex justify-between items-center">
+                        <span class="font-bold text-black">SEO Keywords:</span>
+                        <span>#BendOregonHero #SilverRailElementary #SchoolSafety</span>
+                    </div>
+                </article>
+
+                <!-- Trend 3: White House Press Secretary Katie Zacharia -->
+                <article class="bg-white border-2 border-black p-5 shadow-sm hover:shadow-md transition">
+                    <span class="text-[10px] font-black text-amber-700 uppercase tracking-widest block mb-1">🏛️ 600K+ SEARCHES | BRIEFING ROOM SHAKEUP</span>
+                    <h3 class="font-serif font-bold text-xl leading-snug mb-3">
+                        <a href="/article/briefing-room-shock-white-house-press-secretary-katie-zacharia-departs-2026" class="hover:text-amber-700 hover:underline">Briefing Room Shock: White House Press Secretary Katie Zacharia Abruptly Departs</a>
+                    </h3>
+                    <p class="text-xs font-sans text-gray-700 leading-relaxed mb-4">
+                        Newly appointed White House Press Secretary Katie Zacharia steps down after a turbulent, headline-making week behind the James S. Brady Briefing Room podium amid Capitol Hill scrutiny.
+                    </p>
+                    <div class="border-t border-gray-200 pt-3 text-[10px] font-sans text-gray-500 uppercase tracking-wider flex justify-between items-center">
+                        <span class="font-bold text-black">SEO Keywords:</span>
+                        <span>#KatieZacharia #PressSecretary #WhiteHouseBriefing</span>
+                    </div>
+                </article>
+
+                <!-- Trend 4: Google Universal Cart Launch -->
+                <article class="bg-white border-2 border-black p-5 shadow-sm hover:shadow-md transition">
+                    <span class="text-[10px] font-black text-indigo-700 uppercase tracking-widest block mb-1">🛒 500K+ SEARCHES | AI SHOPPING LAUNCH</span>
+                    <h3 class="font-serif font-bold text-xl leading-snug mb-3">
+                        <a href="/article/google-launches-universal-cart-gemini-ai-transforms-holiday-shopping-2026" class="hover:text-indigo-700 hover:underline">Google Launches Universal Cart: Gemini AI Transforms Holiday E-Commerce Shopping</a>
+                    </h3>
+                    <p class="text-xs font-sans text-gray-700 leading-relaxed mb-4">
+                        Google unveils its ambitious Gemini-powered Universal Cart, enabling shoppers to track price drops across hundreds of merchants and complete cross-retailer checkout in one click.
+                    </p>
+                    <div class="border-t border-gray-200 pt-3 text-[10px] font-sans text-gray-500 uppercase tracking-wider flex justify-between items-center">
+                        <span class="font-bold text-black">SEO Keywords:</span>
+                        <span>#UniversalCart #GoogleGeminiShopping #AICommerce</span>
+                    </div>
+                </article>
+
+                <!-- Trend 5: World Series Mania & Dodgers -->
                 <article class="bg-white border-2 border-black p-5 shadow-sm hover:shadow-md transition">
                     <span class="text-[10px] font-black text-blue-700 uppercase tracking-widest block mb-1">⚾ 1M+ SEARCHES | FALL CLASSIC MANIA</span>
                     <h3 class="font-serif font-bold text-xl leading-snug mb-3">
@@ -298,28 +358,13 @@
                     </p>
                     <div class="border-t border-gray-200 pt-3 text-[10px] font-sans text-gray-500 uppercase tracking-wider flex justify-between items-center">
                         <span class="font-bold text-black">SEO Keywords:</span>
-                        <span>#WorldSeries2026 #DodgersGame4 #ShoheiOhtani</span>
+                        <span>#WorldSeries2026 #DodgersVsBrewers #ShoheiOhtani</span>
                     </div>
                 </article>
 
-                <!-- Trend 2: Sam Darnold MVP Surge -->
+                <!-- Trend 6: California Wildfires (Malibu & Bryson) -->
                 <article class="bg-white border-2 border-black p-5 shadow-sm hover:shadow-md transition">
-                    <span class="text-[10px] font-black text-purple-700 uppercase tracking-widest block mb-1">🏈 500K+ SEARCHES | NFL QUARTERBACK FRENZY</span>
-                    <h3 class="font-serif font-bold text-xl leading-snug mb-3">
-                        <a href="/article/quarterback-fever-sam-darnold-mvp-surge-meets-bo-nix-denver-renaissance-2026" class="hover:text-purple-700 hover:underline">Quarterback Fever: Sam Darnold’s MVP Surge Meets Bo Nix's Denver Renaissance</a>
-                    </h3>
-                    <p class="text-xs font-sans text-gray-700 leading-relaxed mb-4">
-                        Sam Darnold's shocking MVP campaign with the undefeated Minnesota Vikings and rookie Bo Nix's Denver offensive resurgence dominate sports talk circuits ahead of Week 7.
-                    </p>
-                    <div class="border-t border-gray-200 pt-3 text-[10px] font-sans text-gray-500 uppercase tracking-wider flex justify-between items-center">
-                        <span class="font-bold text-black">SEO Keywords:</span>
-                        <span>#SamDarnold #BoNix #NFLWeek7 #NFLMVP</span>
-                    </div>
-                </article>
-
-                <!-- Trend 3: California Wildfires (Malibu & Bryson) -->
-                <article class="bg-white border-2 border-black p-5 shadow-sm hover:shadow-md transition">
-                    <span class="text-[10px] font-black text-red-700 uppercase tracking-widest block mb-1">🔥 500K+ SEARCHES | EMERGENCY WILDFIRES</span>
+                    <span class="text-[10px] font-black text-red-700 uppercase tracking-widest block mb-1">🔥 700K+ SEARCHES | EMERGENCY WILDFIRES</span>
                     <h3 class="font-serif font-bold text-xl leading-snug mb-3">
                         <a href="/article/california-under-siege-santa-ana-winds-drive-evacuations-malibu-bryson-fires-2026" class="hover:text-red-700 hover:underline">California Under Siege: Santa Ana Winds Drive Rapid Evacuations in Malibu and Bryson Fires</a>
                     </h3>
@@ -329,51 +374,6 @@
                     <div class="border-t border-gray-200 pt-3 text-[10px] font-sans text-gray-500 uppercase tracking-wider flex justify-between items-center">
                         <span class="font-bold text-black">SEO Keywords:</span>
                         <span>#MalibuFire #BrysonFire #CaliforniaWildfires</span>
-                    </div>
-                </article>
-
-                <!-- Trend 4: Executive Privilege Showdown -->
-                <article class="bg-white border-2 border-black p-5 shadow-sm hover:shadow-md transition">
-                    <span class="text-[10px] font-black text-amber-700 uppercase tracking-widest block mb-1">⚖️ 400K+ SEARCHES | CONSTITUTIONAL CLASH</span>
-                    <h3 class="font-serif font-bold text-xl leading-snug mb-3">
-                        <a href="/article/executive-privilege-showdown-white-house-defies-subpoenas-kennedy-center-records-2026" class="hover:text-amber-700 hover:underline">Executive Privilege Showdown: White House Defies Subpoenas Over Kennedy Center Records</a>
-                    </h3>
-                    <p class="text-xs font-sans text-gray-700 leading-relaxed mb-4">
-                        The White House officially invokes executive privilege to block congressional subpoenas into confidential appointment logs and federal grant distributions at the national cultural institution.
-                    </p>
-                    <div class="border-t border-gray-200 pt-3 text-[10px] font-sans text-gray-500 uppercase tracking-wider flex justify-between items-center">
-                        <span class="font-bold text-black">SEO Keywords:</span>
-                        <span>#ExecutivePrivilege #KennedyCenterRecords #CapitolHillProbe</span>
-                    </div>
-                </article>
-
-                <!-- Trend 5: Early Voting Tsunami -->
-                <article class="bg-white border-2 border-black p-5 shadow-sm hover:shadow-md transition">
-                    <span class="text-[10px] font-black text-emerald-700 uppercase tracking-widest block mb-1">🗳️ 600K+ SEARCHES | MIDTERM TURNOUT WAVE</span>
-                    <h3 class="font-serif font-bold text-xl leading-snug mb-3">
-                        <a href="/article/early-voting-tsunami-millions-flood-polling-stations-record-breaking-midterm-turnout-2026" class="hover:text-emerald-700 hover:underline">Early Voting Tsunami: Millions Flood Polling Stations in Record-Breaking Midterm Turnout</a>
-                    </h3>
-                    <p class="text-xs font-sans text-gray-700 leading-relaxed mb-4">
-                        Citizens shatter all-time midterm voting records across Georgia, North Carolina, and Pennsylvania as early in-person polling opens with long lines and surging independent participation.
-                    </p>
-                    <div class="border-t border-gray-200 pt-3 text-[10px] font-sans text-gray-500 uppercase tracking-wider flex justify-between items-center">
-                        <span class="font-bold text-black">SEO Keywords:</span>
-                        <span>#EarlyVoting2026 #MidtermTurnout #BattlegroundStates</span>
-                    </div>
-                </article>
-
-                <!-- Trend 6: MOAB Bomb & Iran Defense Leak -->
-                <article class="bg-white border-2 border-black p-5 shadow-sm hover:shadow-md transition">
-                    <span class="text-[10px] font-black text-rose-700 uppercase tracking-widest block mb-1">💣 1M+ SEARCHES | MILITARY INTELLIGENCE</span>
-                    <h3 class="font-serif font-bold text-xl leading-snug mb-3">
-                        <a href="/article/inside-mother-of-all-bombs-how-21600-pound-moab-weapon-works-iran-2026" class="hover:text-rose-700 hover:underline">Inside ‘The Mother of All Bombs’: How the 21,600-Pound MOAB Weapon Actually Works</a>
-                    </h3>
-                    <p class="text-xs font-sans text-gray-700 leading-relaxed mb-4">
-                        Technical breakdown of the GBU-43/B MOAB munition: atmospheric overpressure physics, cargo parachute drops, and its strategic role against subterranean Iranian nuclear sites.
-                    </p>
-                    <div class="border-t border-gray-200 pt-3 text-[10px] font-sans text-gray-500 uppercase tracking-wider flex justify-between items-center">
-                        <span class="font-bold text-black">SEO Keywords:</span>
-                        <span>#MOABBomb #GBU43 #MilitaryStrikePlans</span>
                     </div>
                 </article>
 
@@ -443,7 +443,7 @@
                             const lastId = localStorage.getItem('lastBreakingNewsId');
                             if (!lastId || data.id > parseInt(lastId)) {
                                 // We have a new breaking news!
-                                const notification = new Notification("SON DAKİKA!", {
+                                const notification = new Notification("🚨 BREAKING NEWS", {
                                     body: data.title,
                                     icon: "https://cdn-icons-png.flaticon.com/512/882/882725.png"
                                 });

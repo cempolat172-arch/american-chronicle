@@ -6,8 +6,11 @@ from app.models import NewsArticle
 
 
 import time
+import logging
 import httpx
 import xml.etree.ElementTree as ET
+
+logger = logging.getLogger(__name__)
 
 _cached_trends = None
 _cached_trends_time = 0
@@ -18,16 +21,16 @@ def get_live_trends():
     if _cached_trends and (time.time() - _cached_trends_time < 3600):
         return _cached_trends
         
-    # High-volume baseline search trends for Google SEO (October 16, 2026 Evening)
+    # High-volume baseline search trends for Google SEO (October 16-17, 2026)
     baseline_trends = [
-        "WorldSeries2026",
-        "SamDarnoldMVP",
-        "MalibuFire",
-        "ExecutivePrivilege",
         "EarlyVoting2026",
-        "DodgersVsBrewers",
-        "BoNixBroncos",
-        "BrysonFire"
+        "BendOregonHero",
+        "KatieZacharia",
+        "UniversalCartAI",
+        "WorldSeries2026",
+        "MalibuFire",
+        "SamDarnoldMVP",
+        "Frightgeist2026"
     ]
     
     try:
@@ -49,6 +52,10 @@ def get_live_trends():
                     extracted = []
                     # High-volume search entity mappings
                     keyword_mappings = [
+                        ("Bend", "BendOregonHero"),
+                        ("Silver Rail", "BendOregonHero"),
+                        ("Zacharia", "KatieZacharia"),
+                        ("Universal Cart", "UniversalCartAI"),
                         ("World Series", "WorldSeries2026"),
                         ("Dodgers", "WorldSeries2026"),
                         ("Darnold", "SamDarnoldMVP"),
@@ -56,10 +63,12 @@ def get_live_trends():
                         ("Malibu", "MalibuFire"),
                         ("Bryson", "BrysonFire"),
                         ("Wildfire", "MalibuFire"),
-                        ("Privilege", "ExecutivePrivilege"),
-                        ("Kennedy", "ExecutivePrivilege"),
                         ("Early Voting", "EarlyVoting2026"),
                         ("Turnout", "EarlyVoting2026"),
+                        ("Frightgeist", "Frightgeist2026"),
+                        ("Halloween", "Frightgeist2026"),
+                        ("Privilege", "ExecutivePrivilege"),
+                        ("Kennedy", "ExecutivePrivilege"),
                         ("MOAB", "MOABBomb"),
                         ("Diddy", "DiddyPrisonFight"),
                         ("Diddy", "DiddyPrisonFight"),

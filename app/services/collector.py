@@ -48,10 +48,29 @@ async def fetch_feed(url: str, client: httpx.AsyncClient):
         logger.error(f"Unexpected error fetching feed {url}: {e}")
     return None
 
+SPAM_KEYWORDS = [
+    "stream", "livestream", "watch live", "nfhs", "!+", "√", "☯️", 
+    "high school", "varsity", "prep football", "where to watch", 
+    "how to watch", "free live", "tv broadcast"
+]
+
+def is_spam_entry(title: str, summary: str) -> bool:
+    content_lower = f"{title} {summary}".lower()
+    for kw in SPAM_KEYWORDS:
+        if kw in content_lower:
+            return True
+    # Filter weird unicode bold/italic alphabets frequently used in spam
+    if any(ord(c) > 0x1D400 for c in title):
+        return True
+    if len(title.strip()) < 15:
+        return True
+    return False
+
 async def collect_news() -> list[dict]:
     """
     Fetches raw news from predefined RSS feeds asynchronously.
     Returns a list of dictionaries containing title, link, summary, and published date.
+    Filters out streaming spam and malformed entries.
     """
     raw_news = []
     
@@ -69,6 +88,11 @@ async def collect_news() -> list[dict]:
                 
                 for entry in parsed.entries:
                     try:
+                        title = entry.get("title", "").strip()
+                        summary = entry.get("summary", "").strip()
+                        if is_spam_entry(title, summary):
+                            continue
+                            
                         published_time = None
                         if hasattr(entry, 'published_parsed') and entry.published_parsed:
                             published_time = datetime.fromtimestamp(mktime(entry.published_parsed), tz=timezone.utc)
@@ -81,16 +105,16 @@ async def collect_news() -> list[dict]:
                                 if enc.get('type', '').startswith('image/'):
                                     image_url = enc.get('href')
                                     break
-                        if not image_url and '<img ' in entry.get('summary', ''):
+                        if not image_url and '<img ' in summary:
                             import re
-                            img_match = re.search(r'<img[^>]+src="([^">]+)"', entry.get('summary', ''))
+                            img_match = re.search(r'<img[^>]+src="([^">]+)"', summary)
                             if img_match:
                                 image_url = img_match.group(1)
 
                         raw_news.append({
-                            "title": entry.get("title", ""),
+                            "title": title,
                             "link": entry.get("link", ""),
-                            "summary": entry.get("summary", ""),
+                            "summary": summary,
                             "published": published_time,
                             "image_url": image_url
                         })
