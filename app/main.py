@@ -10,6 +10,8 @@ from app.services.publisher import run_news_pipeline
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+# httpx logs full request URLs at INFO level; keep it quiet
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 scheduler = AsyncIOScheduler()
 

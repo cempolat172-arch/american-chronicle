@@ -185,6 +185,10 @@ async def _run_news_pipeline() -> dict:
         logger.info(f"Fresh (<{FRESH_HOURS}h) unique stories: {len(new_articles)} | skipped old: {skipped_old}")
         
         # Step 2: Limit batch size to 5 to avoid Vercel timeouts (10s) and Gemini RPM limits (15/min)
+        from app.services.ai_processor import gemini_in_cooldown
+        if gemini_in_cooldown():
+            logger.info("Gemini quota cooldown active; skipping AI writing this run.")
+            return {"status": "cooldown", "message": "Gemini quota exceeded, waiting.", "pending_in_queue": len(new_articles)}
         batch = new_articles[:2]
         logger.info(f"Processing a safe batch of {len(batch)} new articles to avoid Gemini rate limits...")
         

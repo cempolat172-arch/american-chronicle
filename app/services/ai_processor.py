@@ -142,8 +142,22 @@ Return ONLY raw JSON (no ``` fences) with exactly these keys:
 """
 
 
+_QUOTA_COOLDOWN_UNTIL = 0.0  # epoch seconds; while in the future, Gemini is not called
+QUOTA_COOLDOWN_SECONDS = 30 * 60
+
+
+def gemini_in_cooldown() -> bool:
+    import time
+    return time.time() < _QUOTA_COOLDOWN_UNTIL
+
+
 async def _call_gemini(prompt: str, api_key: str, use_search: bool) -> Optional[str]:
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={api_key}"
+    global _QUOTA_COOLDOWN_UNTIL
+    import time
+    if gemini_in_cooldown():
+        return None
+    # API key goes in a header (not the URL) so it never appears in server logs
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
     payload = {"contents": [{"parts": [{"text": prompt}]}], "generationConfig": {"temperature": 0.7}}
     if use_search:
         payload["tools"] = [{"google_search": {}}]
@@ -151,7 +165,11 @@ async def _call_gemini(prompt: str, api_key: str, use_search: bool) -> Optional[
         payload["generationConfig"]["responseMimeType"] = "application/json"
     try:
         async with httpx.AsyncClient(timeout=120.0) as http_client:
-            resp = await http_client.post(url, json=payload)
+            resp = await http_client.post(url, json=payload, headers={"x-goog-api-key": api_key})
+        if resp.status_code == 429:
+            _QUOTA_COOLDOWN_UNTIL = time.time() + QUOTA_COOLDOWN_SECONDS
+            logger.warning("Gemini quota exceeded (429). Pausing AI writing for 30 minutes.")
+            return None
         if resp.status_code != 200:
             logger.warning(f"Gemini API status {resp.status_code}: {resp.text[:300]}")
             return None
