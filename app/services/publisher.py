@@ -123,6 +123,7 @@ def publish_article(db: Session, raw_news: dict, ai_result: dict) -> Optional[Ne
         return None
 
 _PIPELINE_LOCK = None
+_LAST_AI_RUN = 0.0  # epoch seconds of the last AI writing attempt
 
 
 async def run_news_pipeline() -> dict:
@@ -186,10 +187,19 @@ async def _run_news_pipeline() -> dict:
         
         # Step 2: Limit batch size to 5 to avoid Vercel timeouts (10s) and Gemini RPM limits (15/min)
         from app.services.ai_processor import gemini_in_cooldown
+        from app.config import settings
+        import time
+        global _LAST_AI_RUN
+        wait_left = _LAST_AI_RUN + settings.ARTICLE_INTERVAL_MINUTES * 60 - time.time()
+        if wait_left > 0:
+            logger.info(f"Next article slot in {int(wait_left // 60)} min (free-tier pacing).")
+            return {"status": "waiting", "message": f"Next article in {int(wait_left // 60)} min.", "pending_in_queue": len(new_articles)}
         if gemini_in_cooldown():
             logger.info("Gemini quota cooldown active; skipping AI writing this run.")
             return {"status": "cooldown", "message": "Gemini quota exceeded, waiting.", "pending_in_queue": len(new_articles)}
-        batch = new_articles[:2]
+        batch = new_articles[:max(1, settings.ARTICLES_PER_RUN)]
+        if batch:
+            _LAST_AI_RUN = time.time()
         logger.info(f"Processing a safe batch of {len(batch)} new articles to avoid Gemini rate limits...")
         
         # Step 3: Process AI generation concurrently
