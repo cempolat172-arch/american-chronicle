@@ -13,7 +13,7 @@ def verify_api_key(x_api_key: Optional[str] = Header(None)):
         raise HTTPException(status_code=401, detail="Yetkisiz erişim. Geçersiz API anahtarı.")
 
 @router.api_route("/trigger-news", methods=["GET", "POST"], dependencies=[Depends(verify_api_key)])
-async def trigger_news_secure(response: Response):
+async def trigger_news_secure(response: Response, background_tasks: BackgroundTasks, wait: bool = False):
     """
     Manuel Haber Tetikleme Endpoint'i (Korumalı).
     Vercel (Serverless) platformları BackgroundTasks desteklemediği için 
@@ -24,7 +24,12 @@ async def trigger_news_secure(response: Response):
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     response.headers["Pragma"] = "no-cache"
     
-    logger.info("Cron trigger received. Executing fast sync batch (Serverless safe).")
+    logger.info("Cron trigger received.")
+    if not wait:
+        # Note: the cron job URL still sends ?sync=true; it is ignored on purpose.
+        # Reading sources + writing long articles takes 30-90s; answer the cron job right away.
+        background_tasks.add_task(run_news_pipeline)
+        return {"status": "accepted", "message": "News pipeline started in background."}
     try:
         result = await run_news_pipeline()
         return {"status": "success", "details": result}

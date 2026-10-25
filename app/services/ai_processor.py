@@ -6,6 +6,7 @@ import urllib.parse
 import httpx
 from typing import Optional
 from app.config import settings
+from app.services.article_reader import fetch_source_article
 
 logger = logging.getLogger(__name__)
 
@@ -79,6 +80,104 @@ def build_ai_image_url(title: str, slug: str, is_bizarre: bool = False) -> str:
         return f"https://picsum.photos/seed/{slug}/800/500"
 
 
+GEMINI_MODEL = "gemini-3-flash-preview"
+MIN_SOURCE_WORDS = 150  # below this, Gemini must research the story with Google Search
+
+
+def _build_prompt(title: str, summary: str, source_url: str, source_text: str, use_search: bool) -> str:
+    if use_search:
+        source_block = f"""The full article text could not be downloaded. Use Google Search to find and read
+reporting about THIS exact story from reputable outlets before writing.
+Headline: {title}
+Publisher link: {source_url}
+RSS summary: {summary}"""
+    else:
+        source_block = f"""Headline: {title}
+Publisher link: {source_url}
+SOURCE ARTICLE TEXT:
+\"\"\"
+{source_text}
+\"\"\""""
+
+    return f"""You are a senior news reporter and SEO editor at The American Chronicle, a US national news site.
+Read the source reporting below and write a completely ORIGINAL news article about the same story.
+
+ACCURACY RULES (most important):
+- Use ONLY facts found in the source reporting: names, numbers, dates, places, scores, quotes.
+- Never invent quotes, statistics, experts, sources, reactions, or events. No speculation presented as fact.
+- If something is unknown, do not guess. A shorter accurate article is better than a padded one.
+- You may quote at most two short direct quotes, attributed exactly as in the source.
+
+ORIGINALITY RULES:
+- Do not copy sentences or paragraph structure from the source. Rewrite everything in your own words,
+  with your own angle, structure, and headings, so it passes plagiarism checks.
+- Do not mention or name the source outlet's article as "the source"; write as our own reporting.
+
+SEO RULES:
+1. Do keyword research for this story: choose ONE focus keyword (the phrase most Americans would type into
+   Google to find this story right now) and 5-8 secondary / long-tail keywords (names, places, "what happened",
+   "when is", "how to" style queries people actually search).
+2. title: a compelling, accurate news headline, max 70 characters, focus keyword near the start.
+   No misleading clickbait. Avoid ALL-CAPS words except short prefixes like "BREAKING:" when truly breaking.
+3. content: Markdown article, 700-1200 words depending on how much real information exists.
+   - First paragraph: answer who/what/when/where in 2-3 sentences and include the focus keyword.
+   - 3-5 H2 (##) subheadings, most containing a keyword naturally; H3 where helpful.
+   - Short paragraphs, a bullet list of key facts, **bold** the most important names/terms (not whole sentences).
+   - Use secondary keywords naturally; never keyword-stuff.
+   - Include background/context ONLY from facts in the source reporting.
+   - End with a "## Frequently Asked Questions" section: 3 questions people search, each answered
+     in 1-3 sentences using only facts from the source. Format each question in **bold** on its own line.
+   - Do not put the headline (H1) inside content.
+4. seo_description: 140-155 characters, includes the focus keyword, makes people want to click.
+5. focus_keyword: the focus keyword string.
+6. keywords: array of 5-8 secondary keyword strings.
+7. is_bizarre: true only if the story is genuinely weird/unusual.
+8. is_breaking: true only for urgent, nationally significant breaking news from the last few hours.
+9. image_prompt: max 15 words describing an editorial photo for the story. No people, faces, text or logos.
+
+Return ONLY raw JSON (no ``` fences) with exactly these keys:
+"title", "content", "seo_description", "focus_keyword", "keywords", "is_bizarre", "is_breaking", "image_prompt".
+
+{source_block}
+"""
+
+
+async def _call_gemini(prompt: str, api_key: str, use_search: bool) -> Optional[str]:
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={api_key}"
+    payload = {"contents": [{"parts": [{"text": prompt}]}], "generationConfig": {"temperature": 0.7}}
+    if use_search:
+        payload["tools"] = [{"google_search": {}}]
+    else:
+        payload["generationConfig"]["responseMimeType"] = "application/json"
+    try:
+        async with httpx.AsyncClient(timeout=120.0) as http_client:
+            resp = await http_client.post(url, json=payload)
+        if resp.status_code != 200:
+            logger.warning(f"Gemini API status {resp.status_code}: {resp.text[:300]}")
+            return None
+        parts = resp.json()["candidates"][0]["content"]["parts"]
+        return "".join(p.get("text", "") for p in parts)
+    except Exception as e:
+        logger.warning(f"Gemini call failed: {e}")
+        return None
+
+
+def _parse_json(text: str) -> Optional[dict]:
+    cleaned = text.strip()
+    cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned)
+    cleaned = re.sub(r"\s*```$", "", cleaned)
+    try:
+        return json.loads(cleaned)
+    except Exception:
+        match = re.search(r"\{.*\}", cleaned, re.S)
+        if match:
+            try:
+                return json.loads(match.group(0))
+            except Exception:
+                pass
+    return None
+
+
 async def process_article_with_ai(raw_news: dict) -> Optional[dict]:
     api_key = settings.GEMINI_API_KEY
     if not api_key:
@@ -86,110 +185,60 @@ async def process_article_with_ai(raw_news: dict) -> Optional[dict]:
         return None
 
     title = raw_news.get("title", "")
-    summary = raw_news.get("summary", "")
+    summary = re.sub(r"<[^>]+>", " ", raw_news.get("summary", "")).strip()
     link = raw_news.get("link", "")
 
-    prompt = f"""
-You are an expert sensationalist journalist for a viral US-focused "Page 3" tabloid portal.
-Your task is to rewrite this news article to be 100% unique (to pass SEO plagiarism checks) and highly engaging for an American audience.
-This might be politics, celebrity gossip, crime, bizarre local US news, or tech.
+    # 1) Read the real article
+    source = await fetch_source_article(link)
+    source_text = source.get("text", "")
+    source_url = source.get("url") or link
+    word_count = len(source_text.split())
+    use_search = word_count < MIN_SOURCE_WORDS
+    logger.info(f"Source for '{title[:60]}': {word_count} words ({'google search' if use_search else 'article text'})")
 
-CRITICAL ETHICAL & LEGAL GUARDRAILS:
-While you must use a highly dramatic, satirical, and tabloid tone, you MUST NEVER generate direct hate speech, dangerous incitement, or malicious, defamatory attacks against real individuals. Focus the satire on political absurdities, institutional flaws, and general entertainment. Avoid dangerous personal legal violations at all costs.
-
-Requirements:
-1. title: Generate an explosive, high-CTR, clickbaity title (max 90 chars). MUST be in English. IMPORTANT: Vary your headline styles wildly! Do NOT use the same prefix for every news. Use diverse styles like "BREAKING:", "EXCLUSIVE:", "ANALYSIS:", "SCANDAL:", "IN-DEPTH:", "SHOCKING:", or just natural newspaper headlines without any prefix. Make them sound like a real, diverse national newspaper.
-2. content: ABSOLUTELY MANDATORY: Write HIGHLY DETAILED, comprehensive, and captivating Markdown content with a STRICT MINIMUM OF 500 WORDS (aim for 500-700 words). Do NOT write short summaries! Expand the narrative by adding deep background context, hypothetical implications, expert-style commentary, and dramatic storytelling to increase reader dwell time. NEVER repeat boilerplate legal phrases like 'Our legal team advised us'. Be unique in every single article. Structure the article beautifully with multiple engaging H2 subheadings, bullet points, and bold text for maximum scannability. Spin the narrative completely to ensure zero plagiarism. Crucially, analyze the core topic and organically weave in high-volume, current trending Google Search keywords. Make the article highly discoverable for today's search trends. (in English)
-3. seo_description: Punchy SEO meta description (max 160 chars) optimized for Google Discover. (in English)
-4. is_bizarre: Boolean. Set to true if the story is genuinely weird, scandalous, mind-blowing, or a crazy crime/celebrity story.
-5. is_breaking: Boolean. Set to true if this is an urgent, time-sensitive national US breaking news event.
-6. image_prompt: A short, vivid English description (max 15 words) of the perfect editorial photo for this article. No people, no text, no logos. Examples: "baseball stadium night lights dramatic sky", "capitol building stormy weather dark clouds", "server room glowing blue neon".
-7. Output Format: Return valid JSON with exactly these keys: "title", "content", "seo_description", "is_bizarre", "is_breaking", "image_prompt".
-Do NOT include any markdown block formatting like ```json, just return the raw JSON string.
-
-Raw News Information:
-Title: {title}
-Original Link: {link}
-Summary: {summary}
-"""
-
-    content_text = None
-
-    # Method 1: Direct Async HTTP REST Call (Fast, Reliable & Model Compatible)
-    try:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key={api_key}"
-        payload = {
-            "contents": [{"parts": [{"text": prompt}]}],
-            "generationConfig": {
-                "responseMimeType": "application/json"
-            }
-        }
-        async with httpx.AsyncClient(timeout=30.0) as http_client:
-            resp = await http_client.post(url, json=payload)
-            if resp.status_code == 200:
-                data = resp.json()
-                content_text = data["candidates"][0]["content"]["parts"][0]["text"]
-            else:
-                logger.warning(f"REST Gemini API returned status {resp.status_code}: {resp.text[:200]}")
-    except Exception as http_err:
-        logger.warning(f"REST Gemini call failed, trying SDK fallback: {http_err}")
-
-    # Method 2: SDK Fallback
-    if not content_text and client:
-        try:
-            response = await asyncio.to_thread(
-                client.models.generate_content,
-                model='gemini-3-flash-preview',
-                contents=prompt,
-            )
-            content_text = response.text
-        except Exception as sdk_err:
-            logger.warning(f"SDK Gemini call failed: {sdk_err}")
-
+    # 2) Write an original article from it
+    prompt = _build_prompt(title, summary, source_url, source_text, use_search)
+    content_text = await _call_gemini(prompt, api_key, use_search)
     if not content_text:
-        logger.warning(f"All Gemini generation attempts failed for '{title}'.")
         return None
 
-    try:
-        cleaned_text = content_text.strip()
-        if cleaned_text.startswith("```json"):
-            cleaned_text = cleaned_text[7:]
-        elif cleaned_text.startswith("```"):
-            cleaned_text = cleaned_text[3:]
-
-        if cleaned_text.endswith("```"):
-            cleaned_text = cleaned_text[:-3]
-
-        cleaned_text = cleaned_text.strip()
-
-        result = json.loads(cleaned_text)
-
-        # Build AI-generated image URL from Gemini's image_prompt
-        image_prompt_text = result.get("image_prompt", "")
-        ai_title = result.get("title", title)
-        is_bizarre = bool(result.get("is_bizarre", False))
-
-        # Use Gemini's custom image_prompt if available, else auto-detect from title
-        if image_prompt_text and len(image_prompt_text) > 5:
-            slug_temp = re.sub(r'[^a-z0-9\s-]', '', ai_title.lower())
-            slug_temp = re.sub(r'[\s-]+', '-', slug_temp).strip('-')
-            encoded = urllib.parse.quote(
-                image_prompt_text + ", ultra realistic, 4k, editorial photography, dramatic lighting, no text, no faces, no logos"
-            )
-            seed = abs(hash(slug_temp)) % 999999
-            image_url = f"https://image.pollinations.ai/prompt/{encoded}?width=800&height=500&seed={seed}&nologo=true"
-        else:
-            image_url = build_ai_image_url(ai_title, ai_title, is_bizarre)
-
-        return {
-            "title": ai_title,
-            "content": result.get("content", ""),
-            "seo_description": result.get("seo_description", ""),
-            "is_bizarre": is_bizarre,
-            "is_breaking": bool(result.get("is_breaking", False)),
-            "image_url": image_url
-        }
-    except Exception as e:
-        error_msg = str(e).lower()
-        logger.warning(f"JSON Parsing Error for AI result ('{title}'): {error_msg}")
+    result = _parse_json(content_text)
+    if not result or not result.get("content"):
+        logger.warning(f"Could not parse Gemini JSON for '{title}'")
         return None
+
+    content = result.get("content", "").strip()
+    if len(content.split()) < 350:
+        logger.warning(f"Article too short ({len(content.split())} words), skipped: '{title}'")
+        return None
+
+    ai_title = (result.get("title") or title).strip()
+    is_bizarre = bool(result.get("is_bizarre", False))
+    keywords = result.get("keywords") or []
+    if isinstance(keywords, str):
+        keywords = [k.strip() for k in keywords.split(",")]
+    focus = (result.get("focus_keyword") or "").strip()
+    all_keywords = [k for k in ([focus] + [str(k).strip() for k in keywords]) if k]
+    seen = set()
+    all_keywords = [k for k in all_keywords if not (k.lower() in seen or seen.add(k.lower()))][:9]
+
+    image_prompt_text = (result.get("image_prompt") or "").strip()
+    slug_temp = re.sub(r"[\s-]+", "-", re.sub(r"[^a-z0-9\s-]", "", ai_title.lower())).strip("-")
+    if len(image_prompt_text) > 5:
+        encoded = urllib.parse.quote(
+            image_prompt_text + ", ultra realistic, 4k, editorial photography, dramatic lighting, no text, no faces, no logos"
+        )
+        seed = abs(hash(slug_temp)) % 999999
+        image_url = f"https://image.pollinations.ai/prompt/{encoded}?width=800&height=500&seed={seed}&nologo=true"
+    else:
+        image_url = build_ai_image_url(ai_title, slug_temp, is_bizarre)
+
+    return {
+        "title": ai_title,
+        "content": content,
+        "seo_description": (result.get("seo_description") or "").strip()[:160],
+        "keywords": ", ".join(all_keywords),
+        "is_bizarre": is_bizarre,
+        "is_breaking": bool(result.get("is_breaking", False)),
+        "image_url": image_url,
+    }

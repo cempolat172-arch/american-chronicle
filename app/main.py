@@ -19,6 +19,13 @@ async def lifespan(app: FastAPI):
     try:
         logger.info("Attempting to connect to the database and create tables...")
         Base.metadata.create_all(bind=engine)
+        # Lightweight migration: add 'keywords' column to existing databases
+        from sqlalchemy import inspect, text
+        cols = [c["name"] for c in inspect(engine).get_columns("news_articles")]
+        if "keywords" not in cols:
+            with engine.begin() as conn:
+                conn.execute(text("ALTER TABLE news_articles ADD COLUMN keywords VARCHAR"))
+            logger.info("Added 'keywords' column to news_articles.")
         logger.info("Database tables verified/created successfully.")
     except OperationalError as e:
         logger.error(f"Failed to connect to the database on startup: {e}")

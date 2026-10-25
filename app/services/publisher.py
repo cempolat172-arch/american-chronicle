@@ -103,7 +103,8 @@ def publish_article(db: Session, raw_news: dict, ai_result: dict) -> Optional[Ne
         is_bizarre=ai_result.get("is_bizarre", False),
         is_breaking=ai_result.get("is_breaking", False),
         published_at=raw_news.get("published") or datetime.now(timezone.utc),
-        image_url=image_url
+        image_url=image_url,
+        keywords=ai_result.get("keywords") or None
     )
 
     try:
@@ -121,7 +122,23 @@ def publish_article(db: Session, raw_news: dict, ai_result: dict) -> Optional[Ne
         logger.error(f"Unexpected error saving article '{title}': {e}")
         return None
 
+_PIPELINE_LOCK = None
+
+
 async def run_news_pipeline() -> dict:
+    """Runs the pipeline; if a run is already in progress (scheduler + cron trigger), skip."""
+    global _PIPELINE_LOCK
+    import asyncio
+    if _PIPELINE_LOCK is None:
+        _PIPELINE_LOCK = asyncio.Lock()
+    if _PIPELINE_LOCK.locked():
+        logger.info("Pipeline already running, skipping this trigger.")
+        return {"status": "skipped", "message": "Pipeline already running."}
+    async with _PIPELINE_LOCK:
+        return await _run_news_pipeline()
+
+
+async def _run_news_pipeline() -> dict:
     """Main pipeline to collect, process, and publish news concurrently & quickly."""
     logger.info("Starting optimized news collection pipeline...")
     

@@ -10,3 +10,4 @@ anthropic
 apscheduler
 python-dotenv
 jinja2
+trafilatura

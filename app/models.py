@@ -21,3 +21,4 @@ class NewsArticle(Base):
     reaction_clown = Column(Integer, default=0)
     
     image_url = Column(String, nullable=True)
+    keywords = Column(String, nullable=True)
