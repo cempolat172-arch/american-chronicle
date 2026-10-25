@@ -6,6 +6,8 @@ def generate_image_prompt(title: str, is_bizarre: bool = False) -> str:
     title_lower = title.lower()
     if any(w in title_lower for w in ["world series", "baseball", "mlb", "brewers", "rays"]):
         prompt = "cinematic baseball stadium night game dramatic lighting crowd cheering"
+    elif any(w in title_lower for w in ["tesla", "roadster", "car ", "cars", "ferrari", "porsche", "hypercar", "supercar", "vehicle", "ev "]):
+        prompt = "futuristic electric hypercar on desert road at dusk dramatic motion blur cinematic"
     elif any(w in title_lower for w in ["election", "voting", "ballot", "midterm", "senate"]):
         prompt = "american flag patriotic voting booth ballot box dramatic studio lighting"
     elif any(w in title_lower for w in ["football", "nfl", "college football", "sec", "big ten"]):

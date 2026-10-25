@@ -1,6 +1,6 @@
 import re
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Optional
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
@@ -10,6 +10,38 @@ from app.services.ai_processor import process_article_with_ai
 from app.database import SessionLocal
 
 logger = logging.getLogger(__name__)
+
+# --- Freshness & duplicate-story control -------------------------------------------
+FRESH_HOURS = 6  # only news published in the last 6 hours is processed
+_STOPWORDS = set("""a an the and or of to in on at for with from by as is are was were be been it its
+this that these those after over into amid says said new news vs his her their they he she
+will can could would about how why what who up out off more than not no just""".split())
+_RECENT_STORY_SIGNATURES: list = []  # signatures of stories published since the server started
+
+
+def _title_signature(title: str) -> frozenset:
+    """Keyword set of a headline (outlet suffix like ' - CNN' removed)."""
+    title = re.sub(r"\s+-\s+[^-]{2,40}$", "", title or "").lower()
+    words = re.findall(r"[a-z0-9']+", title)
+    return frozenset(w for w in words if len(w) > 2 and w not in _STOPWORDS)
+
+
+def _is_duplicate_story(sig: frozenset, others, threshold: float = 0.5) -> bool:
+    for o in others:
+        if not o:
+            continue
+        overlap = len(sig & o) / max(1, min(len(sig), len(o)))
+        if overlap >= threshold:
+            return True
+    return False
+
+
+def _remember_story(title: str):
+    sig = _title_signature(title)
+    if sig:
+        _RECENT_STORY_SIGNATURES.append(sig)
+        del _RECENT_STORY_SIGNATURES[:-500]
+
 
 def generate_slug(title: str) -> str:
     """Generates a URL-friendly slug for a given title."""
@@ -116,8 +148,24 @@ async def run_news_pipeline() -> dict:
             if not check_article_exists(db, original_url):
                 new_articles.append(raw_news)
                 
+        # Only keep FRESH news: skip anything older than FRESH_HOURS (old backlog is dropped, not queued)
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=FRESH_HOURS)
+        fresh = [n for n in new_articles if n.get('published') and n['published'] >= cutoff]
+        skipped_old = len(new_articles) - len(fresh)
+
         # Sort by published date descending (newest first) so the site is always fresh
-        new_articles.sort(key=lambda x: x.get('published') or datetime.min.replace(tzinfo=timezone.utc), reverse=True)
+        fresh.sort(key=lambda x: x['published'], reverse=True)
+
+        # Drop duplicates of the same story coming from different outlets
+        new_articles = []
+        for n in fresh:
+            sig = _title_signature(n.get('title', ''))
+            if not sig or _is_duplicate_story(sig, [_title_signature(a.get('title', '')) for a in new_articles]):
+                continue
+            if _is_duplicate_story(sig, _RECENT_STORY_SIGNATURES):
+                continue
+            new_articles.append(n)
+        logger.info(f"Fresh (<{FRESH_HOURS}h) unique stories: {len(new_articles)} | skipped old: {skipped_old}")
         
         # Step 2: Limit batch size to 5 to avoid Vercel timeouts (10s) and Gemini RPM limits (15/min)
         batch = new_articles[:2]
@@ -144,11 +192,13 @@ async def run_news_pipeline() -> dict:
                 if ai_res:
                     if publish_article(db, raw, ai_res):
                         published_count += 1
+                        _remember_story(raw.get('title', ''))
                         
         return {
             "status": "success", 
             "message": f"Successfully published {published_count} new articles.",
-            "pending_in_queue": len(new_articles) - len(batch) if len(new_articles) > len(batch) else 0
+            "pending_in_queue": len(new_articles) - len(batch) if len(new_articles) > len(batch) else 0,
+            "skipped_old": skipped_old
         }
     finally:
         try:
