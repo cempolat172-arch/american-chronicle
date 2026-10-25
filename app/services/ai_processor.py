@@ -1,18 +1,23 @@
 import json
 import logging
 import asyncio
+import httpx
 from typing import Optional
-from google import genai
 from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-# Initialize the modern google-genai Client
-client = genai.Client(api_key=settings.GEMINI_API_KEY) if settings.GEMINI_API_KEY else None
+# Try to import modern google-genai Client safely
+try:
+    from google import genai
+    client = genai.Client(api_key=settings.GEMINI_API_KEY) if settings.GEMINI_API_KEY else None
+except Exception:
+    client = None
 
 async def process_article_with_ai(raw_news: dict) -> Optional[dict]:
-    if not client:
-        print("GEMINI CRITICAL ERROR: API key is not configured.")
+    api_key = settings.GEMINI_API_KEY
+    if not api_key:
+        logger.error("GEMINI CRITICAL ERROR: API key is not configured.")
         return None
 
     title = raw_news.get("title", "")
@@ -42,18 +47,44 @@ Original Link: {link}
 Summary: {summary}
 """
 
+    content_text = None
+
+    # Method 1: Direct Async HTTP REST Call (Fast, Reliable & Model Compatible)
     try:
-        # Generate content using the modern google-genai syntax and official flash model
-        response = await asyncio.to_thread(
-            client.models.generate_content,
-            model='gemini-1.5-flash',
-            contents=prompt,
-        )
-        
-        content_text = response.text
-        if not content_text:
-            raise ValueError("Empty response text (possibly blocked by safety filters).")
-            
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key={api_key}"
+        payload = {
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {
+                "responseMimeType": "application/json"
+            }
+        }
+        async with httpx.AsyncClient(timeout=30.0) as http_client:
+            resp = await http_client.post(url, json=payload)
+            if resp.status_code == 200:
+                data = resp.json()
+                content_text = data["candidates"][0]["content"]["parts"][0]["text"]
+            else:
+                logger.warning(f"REST Gemini API returned status {resp.status_code}: {resp.text[:200]}")
+    except Exception as http_err:
+        logger.warning(f"REST Gemini call failed, trying SDK fallback: {http_err}")
+
+    # Method 2: SDK Fallback
+    if not content_text and client:
+        try:
+            response = await asyncio.to_thread(
+                client.models.generate_content,
+                model='gemini-3-flash-preview',
+                contents=prompt,
+            )
+            content_text = response.text
+        except Exception as sdk_err:
+            logger.warning(f"SDK Gemini call failed: {sdk_err}")
+
+    if not content_text:
+        logger.warning(f"All Gemini generation attempts failed for '{title}'.")
+        return None
+
+    try:
         cleaned_text = content_text.strip()
         if cleaned_text.startswith("```json"):
             cleaned_text = cleaned_text[7:]
@@ -75,6 +106,5 @@ Summary: {summary}
         }
     except Exception as e:
         error_msg = str(e).lower()
-        logger.warning(f"GEMINI API ERROR or SAFETY BLOCK ('{title}'): {error_msg}")
-        # Never publish repetitive low-quality template articles to the database
+        logger.warning(f"JSON Parsing Error for AI result ('{title}'): {error_msg}")
         return None

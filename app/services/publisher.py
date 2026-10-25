@@ -68,7 +68,7 @@ def publish_article(db: Session, raw_news: dict, ai_result: dict) -> Optional[Ne
         seo_description=ai_result.get("seo_description", ""),
         is_bizarre=ai_result.get("is_bizarre", False),
         is_breaking=ai_result.get("is_breaking", False),
-        published_at=raw_news.get("published"),
+        published_at=raw_news.get("published") or datetime.now(timezone.utc),
         image_url=image_url
     )
 
