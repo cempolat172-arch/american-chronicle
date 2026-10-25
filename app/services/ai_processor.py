@@ -46,7 +46,7 @@ Summary: {summary}
         # Generate content using the modern google-genai syntax and official flash model
         response = await asyncio.to_thread(
             client.models.generate_content,
-            model='gemini-2.5-flash',
+            model='gemini-1.5-flash',
             contents=prompt,
         )
         
