@@ -21,16 +21,16 @@ def get_live_trends():
     if _cached_trends and (time.time() - _cached_trends_time < 3600):
         return _cached_trends
         
-    # High-volume baseline search trends for Google SEO (October 17-18, 2026)
+    # High-volume baseline search trends for Google SEO (October 25, 2026)
     baseline_trends = [
-        "TrumpRussiaWaiver",
-        "MicrosoftGreenCard",
-        "OhioStateVsIndiana",
-        "EastCoastNoreaster",
-        "Smile2BoxOffice",
-        "NoKingsRallies",
+        "WorldSeries2026",
+        "EarlyVoting2026",
+        "TexasAMvsAlabama",
+        "DaylightSaving2026",
+        "AINuclearEnergy",
         "Terrifier3Record",
-        "StraitOfHormuz"
+        "Smile2BoxOffice",
+        "TrumpRussiaWaiver"
     ]
     
     try:
@@ -52,6 +52,24 @@ def get_live_trends():
                     extracted = []
                     # High-volume search entity mappings
                     keyword_mappings = [
+                        ("World Series", "WorldSeries2026"),
+                        ("Brewers", "WorldSeries2026"),
+                        ("Rays", "WorldSeries2026"),
+                        ("Tropicana", "WorldSeries2026"),
+                        ("Early Voting", "EarlyVoting2026"),
+                        ("Ballots", "EarlyVoting2026"),
+                        ("Midterm", "EarlyVoting2026"),
+                        ("Texas A&M", "TexasAMvsAlabama"),
+                        ("Aggies", "TexasAMvsAlabama"),
+                        ("Kyle Field", "TexasAMvsAlabama"),
+                        ("Daylight Saving", "DaylightSaving2026"),
+                        ("Clocks", "DaylightSaving2026"),
+                        ("Sunshine Act", "DaylightSaving2026"),
+                        ("Nuclear", "AINuclearEnergy"),
+                        ("Reactor", "AINuclearEnergy"),
+                        ("SMR", "AINuclearEnergy"),
+                        ("Terrifier", "Terrifier3Record"),
+                        ("Smile 2", "Smile2BoxOffice"),
                         ("Russia", "TrumpRussiaWaiver"),
                         ("Sanctions", "TrumpRussiaWaiver"),
                         ("Diesel", "TrumpRussiaWaiver"),
