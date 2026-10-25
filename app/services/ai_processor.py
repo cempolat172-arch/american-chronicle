@@ -1,6 +1,8 @@
 import json
 import logging
 import asyncio
+import re
+import urllib.parse
 import httpx
 from typing import Optional
 from app.config import settings
@@ -13,6 +15,69 @@ try:
     client = genai.Client(api_key=settings.GEMINI_API_KEY) if settings.GEMINI_API_KEY else None
 except Exception:
     client = None
+
+
+def generate_image_prompt(title: str, is_bizarre: bool = False) -> str:
+    """
+    Generates a clean, photorealistic image prompt for Pollinations.ai
+    based on the article title and category.
+    No faces, no text, no logos — pure editorial photography style.
+    """
+    title_lower = title.lower()
+
+    # Category detection → tailored visual prompt
+    if any(w in title_lower for w in ["world series", "baseball", "mlb", "brewers", "rays", "dodgers"]):
+        prompt = "cinematic baseball stadium night game dramatic lighting empty field crowd cheering"
+    elif any(w in title_lower for w in ["election", "voting", "ballot", "midterm", "senate", "congress"]):
+        prompt = "american flag patriotic voting booth ballot box dramatic studio lighting"
+    elif any(w in title_lower for w in ["football", "nfl", "college football", "quarterback", "touchdown"]):
+        prompt = "american football stadium aerial view night game dramatic floodlights"
+    elif any(w in title_lower for w in ["hurricane", "storm", "tornado", "flood", "disaster", "wildfire", "fire"]):
+        prompt = "dramatic storm clouds dark sky lightning bolt cinematic weather photography"
+    elif any(w in title_lower for w in ["ai", "artificial intelligence", "nuclear", "reactor", "tech", "data center", "gemini"]):
+        prompt = "futuristic server room glowing blue neon light technology datacenter cinematic"
+    elif any(w in title_lower for w in ["trump", "biden", "president", "white house", "congress", "senate", "political"]):
+        prompt = "washington dc capitol building dramatic sunset golden hour american flag"
+    elif any(w in title_lower for w in ["stock", "economy", "bitcoin", "market", "wall street", "crypto"]):
+        prompt = "stock market trading floor dramatic financial graphs charts golden light"
+    elif any(w in title_lower for w in ["halloween", "horror", "scary", "terrifier", "smile", "clown"]):
+        prompt = "dark gothic halloween night jack o lanterns eerie orange fog cinematic"
+    elif any(w in title_lower for w in ["celebrity", "hollywood", "actor", "actress", "scandal", "gossip"]):
+        prompt = "hollywood walk of fame night neon lights glamour cinematic dramatic"
+    elif any(w in title_lower for w in ["daylight saving", "clock", "time", "sunshine"]):
+        prompt = "vintage analog clock golden hour warm sunlight morning fog cinematic"
+    elif any(w in title_lower for w in ["russia", "ukraine", "war", "military", "sanctions"]):
+        prompt = "dramatic geopolitical tension map globe world conflict cinematic dark moody"
+    elif any(w in title_lower for w in ["immigration", "visa", "border", "green card"]):
+        prompt = "american eagle flag freedom immigration liberty dramatic light rays"
+    elif any(w in title_lower for w in ["nba", "basketball", "nfl", "sports", "game"]):
+        prompt = "empty sports arena dramatic lighting basketball court cinematic photography"
+    elif is_bizarre:
+        prompt = "surreal bizarre dark dramatic cinematic photography mysterious shadows"
+    else:
+        prompt = "dramatic american newspaper journalism editorial bold cinematic photography news"
+
+    # Append universal quality enhancers
+    prompt += ", ultra realistic, 4k, editorial photography, dramatic lighting, no text, no faces, no logos"
+    return prompt
+
+
+def build_ai_image_url(title: str, slug: str, is_bizarre: bool = False) -> str:
+    """
+    Builds a Pollinations.ai URL that generates an AI image on-the-fly.
+    Uses the article title for a relevant, unique image every time.
+    Falls back to picsum for reliability.
+    """
+    try:
+        prompt = generate_image_prompt(title, is_bizarre)
+        encoded = urllib.parse.quote(prompt)
+        # seed from slug hash ensures same article always gets same image
+        seed = abs(hash(slug)) % 999999
+        return f"https://image.pollinations.ai/prompt/{encoded}?width=800&height=500&seed={seed}&nologo=true"
+    except Exception as e:
+        logger.warning(f"Failed to build AI image URL: {e}")
+        return f"https://picsum.photos/seed/{slug}/800/500"
+
 
 async def process_article_with_ai(raw_news: dict) -> Optional[dict]:
     api_key = settings.GEMINI_API_KEY
@@ -38,7 +103,8 @@ Requirements:
 3. seo_description: Punchy SEO meta description (max 160 chars) optimized for Google Discover. (in English)
 4. is_bizarre: Boolean. Set to true if the story is genuinely weird, scandalous, mind-blowing, or a crazy crime/celebrity story.
 5. is_breaking: Boolean. Set to true if this is an urgent, time-sensitive national US breaking news event.
-6. Output Format: Return valid JSON with exactly these keys: "title", "content", "seo_description", "is_bizarre", "is_breaking".
+6. image_prompt: A short, vivid English description (max 15 words) of the perfect editorial photo for this article. No people, no text, no logos. Examples: "baseball stadium night lights dramatic sky", "capitol building stormy weather dark clouds", "server room glowing blue neon".
+7. Output Format: Return valid JSON with exactly these keys: "title", "content", "seo_description", "is_bizarre", "is_breaking", "image_prompt".
 Do NOT include any markdown block formatting like ```json, just return the raw JSON string.
 
 Raw News Information:
@@ -90,19 +156,38 @@ Summary: {summary}
             cleaned_text = cleaned_text[7:]
         elif cleaned_text.startswith("```"):
             cleaned_text = cleaned_text[3:]
-            
+
         if cleaned_text.endswith("```"):
             cleaned_text = cleaned_text[:-3]
-            
+
         cleaned_text = cleaned_text.strip()
-        
+
         result = json.loads(cleaned_text)
+
+        # Build AI-generated image URL from Gemini's image_prompt
+        image_prompt_text = result.get("image_prompt", "")
+        ai_title = result.get("title", title)
+        is_bizarre = bool(result.get("is_bizarre", False))
+
+        # Use Gemini's custom image_prompt if available, else auto-detect from title
+        if image_prompt_text and len(image_prompt_text) > 5:
+            slug_temp = re.sub(r'[^a-z0-9\s-]', '', ai_title.lower())
+            slug_temp = re.sub(r'[\s-]+', '-', slug_temp).strip('-')
+            encoded = urllib.parse.quote(
+                image_prompt_text + ", ultra realistic, 4k, editorial photography, dramatic lighting, no text, no faces, no logos"
+            )
+            seed = abs(hash(slug_temp)) % 999999
+            image_url = f"https://image.pollinations.ai/prompt/{encoded}?width=800&height=500&seed={seed}&nologo=true"
+        else:
+            image_url = build_ai_image_url(ai_title, ai_title, is_bizarre)
+
         return {
-            "title": result.get("title", "Untitled News"),
+            "title": ai_title,
             "content": result.get("content", ""),
             "seo_description": result.get("seo_description", ""),
-            "is_bizarre": bool(result.get("is_bizarre", False)),
-            "is_breaking": bool(result.get("is_breaking", False))
+            "is_bizarre": is_bizarre,
+            "is_breaking": bool(result.get("is_breaking", False)),
+            "image_url": image_url
         }
     except Exception as e:
         error_msg = str(e).lower()

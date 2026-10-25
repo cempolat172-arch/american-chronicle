@@ -55,10 +55,12 @@ def publish_article(db: Session, raw_news: dict, ai_result: dict) -> Optional[Ne
         logger.error(f"Database error while generating unique slug: {e}")
         return None
 
-    image_url = raw_news.get("image_url")
+    # Priority: 1) AI-generated Pollinations.ai image from ai_result, 2) RSS feed image, 3) picsum fallback
+    image_url = ai_result.get("image_url") or raw_news.get("image_url")
     if not image_url:
-        # Fallback to a fast, reliable, deterministic vintage placeholder
-        image_url = f"https://picsum.photos/seed/{slug}/800/600?grayscale"
+        # Auto-generate AI image from article title as final fallback
+        from app.services.ai_processor import build_ai_image_url
+        image_url = build_ai_image_url(title, slug, ai_result.get("is_bizarre", False))
 
     new_article = NewsArticle(
         title=title,
