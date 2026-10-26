@@ -203,7 +203,10 @@ async def _run_news_pipeline(force: bool = False) -> dict:
         from app.services.ai_processor import MIN_SOURCE_WORDS
         wanted = max(1, settings.ARTICLES_PER_RUN)
         batch, sources, checked = [], {}, 0
-        for candidate in new_articles[:15]:
+        # Direct publisher links first (readable), then a few Google News items
+        direct = [n for n in new_articles if "news.google.com" not in n.get("link", "")]
+        via_google = [n for n in new_articles if "news.google.com" in n.get("link", "")]
+        for candidate in direct[:12] + via_google[:3]:
             if len(batch) >= wanted:
                 break
             checked += 1

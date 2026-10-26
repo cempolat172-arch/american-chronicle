@@ -27,7 +27,19 @@ RSS_FEEDS = [
     "https://news.google.com/rss/search?q=sports+OR+nba+OR+nfl+OR+basketball+OR+football+when:1d&hl=en-US&gl=US&ceid=US:en",
     
     # World News (Dünya Haberleri)
-    "https://news.google.com/rss/headlines/section/topic/WORLD?hl=en-US&gl=US&ceid=US:en"
+    "https://news.google.com/rss/headlines/section/topic/WORLD?hl=en-US&gl=US&ceid=US:en",
+
+    # Direct publisher feeds: links point straight to the article, so the full text can be read
+    # (Google News links can't be resolved from datacenter IPs).
+    "https://feeds.npr.org/1001/rss.xml",
+    "https://feeds.bbci.co.uk/news/world/us_and_canada/rss.xml",
+    "https://www.theguardian.com/us-news/rss",
+    "https://www.cbsnews.com/latest/rss/main",
+    "https://feeds.nbcnews.com/nbcnews/public/news",
+    "https://abcnews.go.com/abcnews/topstories",
+    "https://moxie.foxnews.com/google-publisher/latest.xml",
+    "https://www.espn.com/espn/rss/news",
+    "https://www.cbssports.com/rss/headlines/",
 ]
 
 async def fetch_feed(url: str, client: httpx.AsyncClient):

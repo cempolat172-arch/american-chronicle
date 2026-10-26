@@ -39,9 +39,14 @@ async def decode_google_news_url(url: str, client: httpx.AsyncClient) -> Optiona
         return None
     article_id = match.group(1)
     try:
-        page = await client.get(f"https://news.google.com/articles/{article_id}", headers=HEADERS)
-        sig = re.search(r'data-n-a-sg="([^"]+)"', page.text)
-        ts = re.search(r'data-n-a-ts="([^"]+)"', page.text)
+        sig = ts = None
+        for variant in (f"https://news.google.com/articles/{article_id}",
+                        f"https://news.google.com/rss/articles/{article_id}"):
+            page = await client.get(variant, headers={**HEADERS, "Cookie": "CONSENT=YES+cb"})
+            sig = re.search(r'data-n-a-sg="([^"]+)"', page.text)
+            ts = re.search(r'data-n-a-ts="([^"]+)"', page.text)
+            if sig and ts:
+                break
         if not sig or not ts:
             logger.warning("Google News decode: signature not found")
             return None
