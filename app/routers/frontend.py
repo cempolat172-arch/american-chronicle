@@ -5,6 +5,7 @@ from app.database import get_db
 from app.models import NewsArticle
 
 
+import re
 import time
 import logging
 import httpx
@@ -15,202 +16,130 @@ logger = logging.getLogger(__name__)
 _cached_trends = None
 _cached_trends_time = 0
 
+# Fallback = real Google Trends US searches (Oct 26, 2026), used only if the live feed is unreachable
+BASELINE_TRENDS = [
+    "chiefs",
+    "barcelona vs real madrid",
+    "colts vs vikings",
+    "giants vs texans",
+    "jalen williams",
+    "lula brazil",
+    "mcrib",
+    "ssi november payment",
+]
+TRENDS_RSS_URL = "https://trends.google.com/trending/rss?geo=US"
+MAX_TRENDS = 10
+
+
+def _traffic_value(text: str) -> int:
+    """'200K+' -> 200000, '1M+' -> 1000000"""
+    if not text:
+        return 0
+    t = text.replace("+", "").replace(",", "").strip().upper()
+    mult = 1
+    if t.endswith("K"):
+        mult, t = 1_000, t[:-1]
+    elif t.endswith("M"):
+        mult, t = 1_000_000, t[:-1]
+    try:
+        return int(float(t) * mult)
+    except ValueError:
+        return 0
+
+
 def get_live_trends():
+    """Real-time US search trends from Google Trends (what people are actually searching), cached 1 hour."""
     global _cached_trends, _cached_trends_time
-    # Cache for 1 hour (3600 seconds)
     if _cached_trends and (time.time() - _cached_trends_time < 3600):
         return _cached_trends
-        
-    # High-volume baseline search trends for Google SEO (October 25, 2026)
-    baseline_trends = [
-        "WorldSeries2026",
-        "EarlyVoting2026",
-        "TexasAMvsAlabama",
-        "DaylightSaving2026",
-        "AINuclearEnergy",
-        "Terrifier3Record",
-        "Smile2BoxOffice",
-        "TrumpRussiaWaiver"
-    ]
-    
+
+    # 1) Past-24-hours trends ranked by search volume (same data as trends.google.com/trending)
     try:
-        # Fetch real-time US Top Stories from Google News RSS (always returns 200 OK)
-        with httpx.Client(timeout=4.0) as client:
-            headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-            }
-            resp = client.get("https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en", headers=headers)
-            if resp.status_code == 200:
-                root = ET.fromstring(resp.text)
-                titles = []
-                for item in root.findall(".//item/title")[:15]:
-                    if item.text:
-                        titles.append(item.text)
-                
-                if titles:
-                    import re
-                    extracted = []
-                    # High-volume search entity mappings
-                    keyword_mappings = [
-                        ("World Series", "WorldSeries2026"),
-                        ("Brewers", "WorldSeries2026"),
-                        ("Rays", "WorldSeries2026"),
-                        ("Tropicana", "WorldSeries2026"),
-                        ("Early Voting", "EarlyVoting2026"),
-                        ("Ballots", "EarlyVoting2026"),
-                        ("Midterm", "EarlyVoting2026"),
-                        ("Texas A&M", "TexasAMvsAlabama"),
-                        ("Aggies", "TexasAMvsAlabama"),
-                        ("Kyle Field", "TexasAMvsAlabama"),
-                        ("Daylight Saving", "DaylightSaving2026"),
-                        ("Clocks", "DaylightSaving2026"),
-                        ("Sunshine Act", "DaylightSaving2026"),
-                        ("Nuclear", "AINuclearEnergy"),
-                        ("Reactor", "AINuclearEnergy"),
-                        ("SMR", "AINuclearEnergy"),
-                        ("Terrifier", "Terrifier3Record"),
-                        ("Smile 2", "Smile2BoxOffice"),
-                        ("Russia", "TrumpRussiaWaiver"),
-                        ("Sanctions", "TrumpRussiaWaiver"),
-                        ("Diesel", "TrumpRussiaWaiver"),
-                        ("Microsoft", "MicrosoftGreenCard"),
-                        ("Brad Smith", "MicrosoftGreenCard"),
-                        ("Vance", "MicrosoftGreenCard"),
-                        ("Green Card", "MicrosoftGreenCard"),
-                        ("H-1B", "MicrosoftGreenCard"),
-                        ("Nor'easter", "EastCoastNoreaster"),
-                        ("Noreaster", "EastCoastNoreaster"),
-                        ("Cyclone", "EastCoastNoreaster"),
-                        ("Smile 2", "Smile2BoxOffice"),
-                        ("Terrifier", "Terrifier3Record"),
-                        ("No Kings", "NoKingsRallies"),
-                        ("Hormuz", "StraitOfHormuz"),
-                        ("Iran", "StraitOfHormuz"),
-                        ("Indiana", "OhioStateVsIndiana"),
-                        ("Ohio State", "OhioStateVsIndiana"),
-                        ("Buckeyes", "OhioStateVsIndiana"),
-                        ("Hoosiers", "OhioStateVsIndiana"),
-                        ("Tennessee", "BamaVsTennessee"),
-                        ("Alabama", "BamaVsTennessee"),
-                        ("Norte", "NorteFire"),
-                        ("Orange County", "NorteFire"),
-                        ("Wildfire", "NorteFire"),
-                        ("Bitcoin", "Bitcoin81400"),
-                        ("Wall Street", "WallStreetJitters"),
-                        ("GTA", "GTA6Leaks"),
-                        ("Rockstar", "GTA6Leaks"),
-                        ("Vice City", "GTA6Leaks"),
-                        ("Bend", "BendOregonHero"),
-                        ("Silver Rail", "BendOregonHero"),
-                        ("Zacharia", "KatieZacharia"),
-                        ("Universal Cart", "UniversalCartAI"),
-                        ("World Series", "WorldSeries2026"),
-                        ("Dodgers", "WorldSeries2026"),
-                        ("Darnold", "SamDarnoldMVP"),
-                        ("Nix", "BoNixBroncos"),
-                        ("Malibu", "MalibuFire"),
-                        ("Bryson", "BrysonFire"),
-                        ("Wildfire", "MalibuFire"),
-                        ("Early Voting", "EarlyVoting2026"),
-                        ("Turnout", "EarlyVoting2026"),
-                        ("Frightgeist", "Frightgeist2026"),
-                        ("Halloween", "Frightgeist2026"),
-                        ("Privilege", "ExecutivePrivilege"),
-                        ("Kennedy", "ExecutivePrivilege"),
-                        ("MOAB", "MOABBomb"),
-                        ("Diddy", "DiddyPrisonFight"),
-                        ("Diddy", "DiddyPrisonFight"),
-                        ("Combs", "DiddyPrisonFight"),
-                        ("Fort Dix", "DiddyPrisonFight"),
-                        ("Madrid", "RealMadridVsRoma"),
-                        ("Roma", "RealMadridVsRoma"),
-                        ("Mourinho", "RealMadridVsRoma"),
-                        ("Tren de Aragua", "TrenDeAraguaRaid"),
-                        ("Aragua", "TrenDeAraguaRaid"),
-                        ("Character.ai", "CharacterAI"),
-                        ("Dudus", "DiddyPrisonFight"),
-                        ("Coke", "DiddyPrisonFight"),
-                        ("Shower Posse", "DiddyPrisonFight"),
-                        ("Centrifuge", "MOABBomb"),
-                        ("Pickaxe", "MOABBomb"),
-                        ("Frightgeist", "Frightgeist2026"),
-                        ("Halloween", "Frightgeist2026"),
-                        ("Costume", "HalloweenCostumes"),
-                        ("Dodgers", "DodgersVsBrewers"),
-                        ("Brewers", "DodgersVsBrewers"),
-                        ("NLCS", "NLCSPlayoffs"),
-                        ("Ohtani", "DodgersVsBrewers"),
-                        ("Medicare", "MedicareEnrollment"),
-                        ("Enrollment", "MedicareEnrollment"),
-                        ("Vikings", "VikingsUndefeated"),
-                        ("Minnesota", "VikingsUndefeated"),
-                        ("Bernie", "BernieSandersTour"),
-                        ("Sanders", "BernieSandersTour"),
-                        ("Alaska", "TrumpAlaskaRally"),
-                        ("Social Security", "SocialSecurityCOLA"),
-                        ("Inflation", "InflationSurge"),
-                        ("Zacharia", "KatieZacharia"),
-                        ("Press Secretary", "KatieZacharia"),
-                        ("DeBrincat", "AlexDeBrincat"),
-                        ("Red Wings", "AlexDeBrincat"),
-                        ("Guilfoyle", "KimberlyGuilfoyle"),
-                        ("Ambassador", "KimberlyGuilfoyle"),
-                        ("Bills", "BillsVsRams"),
-                        ("Mitte", "RJMitte"),
-                        ("Omar", "IlhanOmarRaid"),
-                        ("Holiday", "ColumbusDay2026"),
-                        ("Simon", "HurricaneSimon"),
-                        ("Hurricane", "HurricaneSimon"),
-                        ("Bakery", "BakeryGate"),
-                        ("Marshall", "BakeryGate"),
-                        ("Hormuz", "StraitOfHormuz"),
-                        ("Midterm", "Midterms2026"),
-                        ("Trump", "Trump2026"),
-                        ("Ukraine", "UkraineCrisis"),
-                        ("Houthi", "MiddleEastCrisis"),
-                        ("Riyadh", "MiddleEastConflict"),
-                        ("Saudi", "SaudiCoalition"),
-                        ("Justice Department", "DOJInvestigation"),
-                        ("DOJ", "DOJInvestigation"),
-                        ("Hurricane", "HurricaneWarning"),
-                        ("Harrison", "MarvinHarrisonJr"),
-                        ("College", "CollegeFootball"),
-                        ("Football", "CollegeFootball"),
-                        ("NFL", "NFLHighlights"),
-                        ("Musk", "ElonMusk"),
-                        ("Starlink", "StarlinkMusk"),
-                        ("AI", "AIRevolution"),
-                        ("Economy", "USStockMarket"),
-                        ("Election", "2026Elections"),
-                        ("Shooting", "BreakingAlert")
-                    ]
-                    
-                    combined = " ".join(titles)
-                    for key, tag in keyword_mappings:
-                        if re.search(r'\b' + re.escape(key) + r'\b', combined, re.IGNORECASE):
-                            if tag not in extracted:
-                                extracted.append(tag)
-                    
-                    # Fill remainder with high-demand trends
-                    for base in baseline_trends:
-                        if base not in extracted:
-                            extracted.append(base)
-                        if len(extracted) >= 8:
-                            break
-                            
-                    _cached_trends = extracted[:8]
+        import json
+        inner = json.dumps([None, None, "US", 0, "en-US", 24, 1])
+        payload = {"f.req": json.dumps([[["i0OFE", inner, None, "generic"]]])}
+        with httpx.Client(timeout=5.0, follow_redirects=True) as client:
+            resp = client.post("https://trends.google.com/_/TrendsUi/data/batchexecute", data=payload, headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                              "(KHTML, like Gecko) Chrome/126.0 Safari/537.36",
+                "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+            })
+        if resp.status_code == 200:
+            line = next((l for l in resp.text.splitlines() if "wrb.fr" in l), None)
+            if line:
+                rows = json.loads(json.loads(line)[0][2])[1]
+                ranked = sorted(((r[0], r[6] or 0) for r in rows if r and r[0]), key=lambda x: x[1], reverse=True)
+                trends = []
+                for term, _ in ranked:
+                    if term.lower() not in [t.lower() for t in trends]:
+                        trends.append(term)
+                if trends:
+                    _cached_trends = trends[:MAX_TRENDS]
                     _cached_trends_time = time.time()
                     return _cached_trends
     except Exception as e:
-        logger.error(f"Error fetching live Google trends: {e}")
-        
-    _cached_trends = baseline_trends
-    _cached_trends_time = time.time()
+        logger.warning(f"Google Trends 24h fetch failed, trying RSS: {e}")
+
+    # 2) Fallback: Google Trends RSS (recent trends)
+    try:
+        with httpx.Client(timeout=4.0, follow_redirects=True) as client:
+            resp = client.get(TRENDS_RSS_URL, headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                              "(KHTML, like Gecko) Chrome/126.0 Safari/537.36"
+            })
+        if resp.status_code == 200:
+            root = ET.fromstring(resp.content)
+            items = []
+            for item in root.findall(".//item"):
+                title = (item.findtext("title") or "").strip()
+                traffic = ""
+                for child in item:
+                    if child.tag.endswith("approx_traffic"):
+                        traffic = child.text or ""
+                if title:
+                    items.append((title, _traffic_value(traffic)))
+            items.sort(key=lambda x: x[1], reverse=True)
+            trends = []
+            for title, _ in items:
+                if title.lower() not in [t.lower() for t in trends]:
+                    trends.append(title)
+            if trends:
+                _cached_trends = trends[:MAX_TRENDS]
+                _cached_trends_time = time.time()
+                return _cached_trends
+        else:
+            logger.warning(f"Google Trends RSS returned {resp.status_code}")
+    except Exception as e:
+        logger.error(f"Error fetching Google Trends RSS: {e}")
+
+    # Retry the live feed in 10 minutes instead of an hour
+    _cached_trends = BASELINE_TRENDS
+    _cached_trends_time = time.time() - 3000
     return _cached_trends
 
-router = APIRouter(tags=["frontend"])
 
-templates = Jinja2Templates(directory="app/templates")
+def build_trend_links(db: Session, trends=None):
+    """Each trend links to our newest matching article (internal linking for SEO), else to site search."""
+    from sqlalchemy import or_
+    import urllib.parse
+    links = []
+    for term in (trends if trends is not None else get_live_trends()):
+        article = None
+        try:
+            from sqlalchemy import and_
+            # Every meaningful word of the search must appear in the title or keywords
+            # ("barcelona - real madrid" matches "Barcelona vs Real Madrid")
+            words = [w for w in re.findall(r"[\w']+", term.lower()) if len(w) > 2 and w not in ("vs", "the", "and")]
+            if words:
+                conds = [or_(NewsArticle.title.ilike(f"%{w}%"), NewsArticle.keywords.ilike(f"%{w}%")) for w in words]
+                article = (db.query(NewsArticle).filter(and_(*conds))
+                           .order_by(NewsArticle.published_at.desc()).first())
+        except Exception as e:
+            logger.warning(f"Trend link lookup failed for '{term}': {e}")
+        url = f"/article/{article.slug}" if article else f"/search?q={urllib.parse.quote(term)}"
+        links.append({"term": term, "url": url, "has_article": bool(article)})
+    return links
+
 
 @router.get("/")
 def read_index(request: Request, db: Session = Depends(get_db)):
@@ -241,7 +170,7 @@ def read_index(request: Request, db: Session = Depends(get_db)):
             "bizarre": bizarre_articles,
             "world_articles": world_articles,
             "category": None,
-            "live_trends": get_live_trends()
+            "live_trends": get_live_trends(), "trend_links": build_trend_links(db)
         }
     )
 
@@ -292,7 +221,7 @@ def read_category(request: Request, slug: str, db: Session = Depends(get_db)):
             "bizarre": bizarre_articles,
             "world_articles": world_articles,
             "category": slug_lower,
-            "live_trends": get_live_trends()
+            "live_trends": get_live_trends(), "trend_links": build_trend_links(db)
         }
     )
 
@@ -340,7 +269,7 @@ def search_articles(request: Request, q: str = "", db: Session = Depends(get_db)
             "bizarre": bizarre_articles,
             "world_articles": world_articles,
             "category": None,
-            "live_trends": get_live_trends(),
+            "live_trends": get_live_trends(), "trend_links": build_trend_links(db),
             "search_query": q
         }
     )
@@ -359,7 +288,7 @@ def read_article(request: Request, slug: str, db: Session = Depends(get_db)):
         "article.html", 
         {
             "article": article,
-            "live_trends": get_live_trends()
+            "live_trends": get_live_trends(), "trend_links": build_trend_links(db)
         }
     )
 

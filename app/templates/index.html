@@ -151,8 +151,8 @@
         <!-- SEO Trending Topics Bar -->
         <div class="border-b-2 border-black py-2 px-4 flex flex-wrap gap-4 text-[9px] uppercase tracking-widest font-bold text-gray-600 bg-gray-50 items-center justify-center lg:justify-start">
             <span class="text-red-600">🔥 LIVE TRENDS:</span>
-            {% for trend in live_trends %}
-                <a href="/search?q={{ trend }}" class="hover:text-black hover:underline">#{{ trend }}</a>
+            {% for t in trend_links %}
+                <a href="{{ t.url }}" class="hover:text-black hover:underline{% if t.has_article %} text-gray-900{% endif %}">{{ t.term | title }}</a>
             {% endfor %}
         </div>
 
