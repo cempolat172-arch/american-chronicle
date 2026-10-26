@@ -10,6 +10,9 @@ def _normalize_url(url: str) -> str:
     # Supabase/Heroku style "postgres://" -> SQLAlchemy "postgresql://"
     if url.startswith("postgres://"):
         url = "postgresql://" + url[len("postgres://"):]
+    # Use the psycopg 3 driver explicitly (installed via requirements: psycopg[binary])
+    if url.startswith("postgresql://"):
+        url = "postgresql+psycopg://" + url[len("postgresql://"):]
     return url
 
 
