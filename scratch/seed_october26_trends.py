@@ -131,7 +131,7 @@ Yes. Barcelona lead with 27 points, three ahead of Real Madrid."""
 "title": "SSI November Payment 2026: Why It Arrives Friday, October 30",
 "slug": "ssi-november-payment-2026-arrives-october-30-social-security-schedule",
 "seo_description": "SSI November payment 2026 arrives early on Friday, Oct. 30. See why, what it means for your budget, and November Social Security dates by birthday.",
-"keywords": "SSI November payment 2026, SSI payment October 30, Supplemental Security Income schedule, Social Security payment dates November 2026, SSI two payments in October, SSI amount 2026, December SSI payment",
+"keywords": "SSI November payment 2026, supplemental security income November payout, SSI payment October 30, Supplemental Security Income schedule, Social Security payment dates November 2026, SSI two payments in October, SSI amount 2026, December SSI payment",
 "is_breaking": 0,
 "image_prompt": "calendar page and envelope on a kitchen table in soft morning light",
 "content": """Millions of Americans who rely on Supplemental Security Income will see their money earlier than usual this month. The **SSI November payment 2026** will be deposited on **Friday, October 30**, instead of November 1, which falls on a Sunday.
@@ -498,7 +498,7 @@ def seed_database():
         a["original_url"] = f"https://theuschronicle.com/article/{a['slug']}"
         print(upsert(cur, a, a["published"]), a["slug"])
 
-    published = "2026-10-26 10:00:00"
+    published = "2026-10-26 07:00:00"  # UTC (10:00 Istanbul)
     for i, a in enumerate(ARTICLES):
         wc = len(a["content"].split())
         assert 500 <= wc <= 600, f"{a['slug']}: {wc} words"

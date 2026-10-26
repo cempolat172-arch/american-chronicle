@@ -162,7 +162,7 @@
             <span class="font-bold text-red-700 uppercase font-sans text-xs whitespace-nowrap">Breaking News</span>
             <marquee class="font-serif italic text-sm text-gray-800" scrollamount="6">
                 {% for b in breaking %} 
-                    <a href="{{ b.original_url }}"  class="hover:underline">{{ b.title }}</a> &nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp; 
+                    <a href="/article/{{ b.slug }}" class="hover:underline">{{ b.title }}</a> &nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp; 
                 {% endfor %}
             </marquee>
         </div>
