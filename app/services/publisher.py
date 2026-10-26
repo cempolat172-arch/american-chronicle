@@ -125,7 +125,7 @@ def publish_article(db: Session, raw_news: dict, ai_result: dict) -> Optional[Ne
 _PIPELINE_LOCK = None
 
 
-async def run_news_pipeline() -> dict:
+async def run_news_pipeline(force: bool = False) -> dict:
     """Runs the pipeline; if a run is already in progress (scheduler + cron trigger), skip."""
     global _PIPELINE_LOCK
     import asyncio
@@ -135,10 +135,10 @@ async def run_news_pipeline() -> dict:
         logger.info("Pipeline already running, skipping this trigger.")
         return {"status": "skipped", "message": "Pipeline already running."}
     async with _PIPELINE_LOCK:
-        return await _run_news_pipeline()
+        return await _run_news_pipeline(force)
 
 
-async def _run_news_pipeline() -> dict:
+async def _run_news_pipeline(force: bool = False) -> dict:
     """Main pipeline to collect, process, and publish news concurrently & quickly."""
     logger.info("Starting optimized news collection pipeline...")
     
@@ -191,10 +191,10 @@ async def _run_news_pipeline() -> dict:
         from app.services import state
         last_ai_run = state.get_float("last_ai_run")
         wait_left = last_ai_run + settings.ARTICLE_INTERVAL_MINUTES * 60 - time.time()
-        if wait_left > 0:
+        if wait_left > 0 and not force:
             logger.info(f"Next article slot in {int(wait_left // 60)} min (free-tier pacing).")
             return {"status": "waiting", "message": f"Next article in {int(wait_left // 60)} min.", "pending_in_queue": len(new_articles)}
-        if gemini_in_cooldown():
+        if gemini_in_cooldown() and not force:
             logger.info("Gemini quota cooldown active; skipping AI writing this run.")
             return {"status": "cooldown", "message": "Gemini quota exceeded, waiting.", "pending_in_queue": len(new_articles)}
         # Pick stories whose full text we can actually read (free, no AI quota used).

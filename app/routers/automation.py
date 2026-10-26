@@ -13,7 +13,8 @@ def verify_api_key(x_api_key: Optional[str] = Header(None)):
         raise HTTPException(status_code=401, detail="Yetkisiz erişim. Geçersiz API anahtarı.")
 
 @router.api_route("/trigger-news", methods=["GET", "POST"], dependencies=[Depends(verify_api_key)])
-async def trigger_news_secure(response: Response, background_tasks: BackgroundTasks, wait: bool = False):
+async def trigger_news_secure(response: Response, background_tasks: BackgroundTasks, wait: bool = False,
+                              force: bool = False):
     """
     Manuel Haber Tetikleme Endpoint'i (Korumalı).
     Vercel (Serverless) platformları BackgroundTasks desteklemediği için 
@@ -30,12 +31,27 @@ async def trigger_news_secure(response: Response, background_tasks: BackgroundTa
         # Reading sources + writing long articles takes 30-90s; answer the cron job right away.
         background_tasks.add_task(run_news_pipeline)
         return {"status": "accepted", "message": "News pipeline started in background."}
+    # wait=true runs now and returns the result; force=true also skips the 30-min pacing (manual tests).
+    # The run's log lines are returned too, so problems can be diagnosed without opening Render logs.
+    import logging as _logging
+    records = []
+
+    class _Collector(_logging.Handler):
+        def emit(self, record):
+            if record.name.startswith("app."):
+                records.append(f"{record.levelname} {record.name.split('.')[-1]}: {record.getMessage()[:300]}")
+
+    handler = _Collector(level=_logging.INFO)
+    root = _logging.getLogger()
+    root.addHandler(handler)
     try:
-        result = await run_news_pipeline()
-        return {"status": "success", "details": result}
+        result = await run_news_pipeline(force=force)
+        return {"status": "success", "details": result, "log": records[-40:]}
     except Exception as e:
         logger.error(f"Pipeline execution failed: {e}")
         raise HTTPException(status_code=500, detail=f"Pipeline execution failed: {str(e)}")
+    finally:
+        root.removeHandler(handler)
 
 @router.api_route("/automation/run-pipeline", methods=["GET", "POST"])
 async def legacy_trigger_pipeline(background_tasks: BackgroundTasks, sync: bool = True):
