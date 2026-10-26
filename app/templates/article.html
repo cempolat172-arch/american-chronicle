@@ -30,7 +30,7 @@
     <meta property="og:site_name" content="The American Chronicle">
     <meta property="article:published_time" content="{{ article.published_at.strftime('%Y-%m-%dT%H:%M:%S+00:00') if article.published_at else article.created_at.strftime('%Y-%m-%dT%H:%M:%S+00:00') }}">
     <meta property="article:modified_time" content="{{ article.created_at.strftime('%Y-%m-%dT%H:%M:%S+00:00') }}">
-    <meta property="og:image" content="{{ article.image_url or ('https://picsum.photos/seed/' ~ article.slug ~ '/800/600?grayscale') }}">
+    <meta property="og:image" content="https://theuschronicle.com/img/{{ article.slug }}.jpg">
     <meta property="og:image:width" content="800">
     <meta property="og:image:height" content="600">
 
@@ -38,7 +38,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{{ article.title }} - The American Chronicle">
     <meta name="twitter:description" content="{{ article.seo_description }}">
-    <meta name="twitter:image" content="{{ article.image_url or ('https://picsum.photos/seed/' ~ article.slug ~ '/800/600?grayscale') }}">
+    <meta name="twitter:image" content="https://theuschronicle.com/img/{{ article.slug }}.jpg">
 
     <!-- Dört Dörtlük SEO: Schema.org / JSON-LD Structured Data for Google News & Discover -->
     <script type="application/ld+json">
@@ -51,7 +51,7 @@
       },
       "headline": "{{ article.title | replace('"', '\"') }}",
       "image": [
-        "{{ article.image_url or ('https://picsum.photos/seed/' ~ article.slug ~ '/800/600?grayscale') }}"
+        "https://theuschronicle.com/img/{{ article.slug }}.jpg"
       ],
       "datePublished": "{{ article.published_at.strftime('%Y-%m-%dT%H:%M:%S+00:00') if article.published_at else article.created_at.strftime('%Y-%m-%dT%H:%M:%S+00:00') }}",
       "dateModified": "{{ article.created_at.strftime('%Y-%m-%dT%H:%M:%S+00:00') }}",
@@ -79,7 +79,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="dns-prefetch" href="https://theuschronicle.disqus.com">
-    <link rel="preload" as="image" href="{{ article.image_url or ('https://picsum.photos/seed/' ~ article.slug ~ '/800/600?grayscale') }}">
+    <link rel="preload" as="image" href="https://theuschronicle.com/img/{{ article.slug }}.jpg">
 
     <!-- Tailwind & Fonts -->
     <style>
@@ -161,7 +161,7 @@
             </header>
 
             <figure class="mb-10 border-4 border-double border-black p-1 bg-white">
-                <img src="{{ article.image_url or ('https://picsum.photos/seed/' ~ article.slug ~ '/800/600?grayscale') }}" alt="Cover Photo" fetchpriority="high" width="800" height="600" class="w-full h-auto grayscale contrast-[1.2] hover:grayscale-0 transition duration-700 ease-in-out mix-blend-multiply">
+                <img src="https://theuschronicle.com/img/{{ article.slug }}.jpg" alt="{{ article.title }}" fetchpriority="high" width="800" height="600" class="w-full h-auto grayscale contrast-[1.2] hover:grayscale-0 transition duration-700 ease-in-out mix-blend-multiply">
                 <figcaption class="text-[10px] font-sans uppercase tracking-widest text-gray-600 text-right mt-2 pr-1">Archive Photo</figcaption>
             </figure>
 

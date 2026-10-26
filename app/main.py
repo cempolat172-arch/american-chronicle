@@ -47,6 +47,9 @@ async def lifespan(app: FastAPI):
             id='news_pipeline_job', 
             replace_existing=True
         )
+        from app.services.images import fill_missing_image
+        # 1 image per minute stays under the image API's free limit (1 per 45 s)
+        scheduler.add_job(fill_missing_image, 'interval', seconds=60, id='image_job', replace_existing=True)
         scheduler.start()
         logger.info("APScheduler started. News pipeline will run every 5 minutes.")
     except Exception as e:

@@ -145,6 +145,19 @@ router = APIRouter(tags=["frontend"])
 
 templates = Jinja2Templates(directory="app/templates")
 
+@router.get("/img/{slug}.jpg")
+def article_image(slug: str, db: Session = Depends(get_db)):
+    """Serves the stored cover image; until it's generated, a branded placeholder."""
+    from fastapi.responses import RedirectResponse
+    from app.models import ArticleImage
+    img = db.get(ArticleImage, slug)
+    if img:
+        return Response(content=img.data, media_type=img.content_type,
+                        headers={"Cache-Control": "public, max-age=2592000, immutable"})
+    return RedirectResponse("/static/img/placeholder.jpg", status_code=302,
+                            headers={"Cache-Control": "public, max-age=300"})
+
+
 @router.get("/")
 def read_index(request: Request, db: Session = Depends(get_db)):
     """
@@ -374,7 +387,7 @@ def generate_rss_feed(db: Session = Depends(get_db)):
         xml_content += f'      <pubDate>{rfc2822_date}</pubDate>\n'
         xml_content += f'      <description>{article.seo_description.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")}</description>\n'
         
-        image = article.image_url or f"https://picsum.photos/seed/{article.slug}/800/600?grayscale"
+        image = f"https://theuschronicle.com/img/{article.slug}.jpg"
         xml_content += f'      <media:content url="{image}" medium="image" />\n'
         xml_content += '    </item>\n'
         

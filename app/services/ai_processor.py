@@ -308,7 +308,7 @@ def _parse_json(text: str) -> Optional[dict]:
     return None
 
 
-async def process_article_with_ai(raw_news: dict) -> Optional[dict]:
+async def process_article_with_ai(raw_news: dict, source: Optional[dict] = None) -> Optional[dict]:
     api_key = settings.GEMINI_API_KEY
     if not api_key:
         logger.error("GEMINI CRITICAL ERROR: API key is not configured.")
@@ -319,7 +319,8 @@ async def process_article_with_ai(raw_news: dict) -> Optional[dict]:
     link = raw_news.get("link", "")
 
     # 1) Read the real article
-    source = await fetch_source_article(link)
+    if source is None:
+        source = await fetch_source_article(link)
     source_text = source.get("text", "")
     source_url = source.get("url") or link
     word_count = len(source_text.split())

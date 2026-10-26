@@ -197,7 +197,24 @@ async def _run_news_pipeline() -> dict:
         if gemini_in_cooldown():
             logger.info("Gemini quota cooldown active; skipping AI writing this run.")
             return {"status": "cooldown", "message": "Gemini quota exceeded, waiting.", "pending_in_queue": len(new_articles)}
-        batch = new_articles[:max(1, settings.ARTICLES_PER_RUN)]
+        # Pick stories whose full text we can actually read (free, no AI quota used).
+        # Unreadable ones (paywall, blocked) are skipped instead of wasting an AI request.
+        from app.services.article_reader import fetch_source_article
+        from app.services.ai_processor import MIN_SOURCE_WORDS
+        wanted = max(1, settings.ARTICLES_PER_RUN)
+        batch, sources, checked = [], {}, 0
+        for candidate in new_articles[:15]:
+            if len(batch) >= wanted:
+                break
+            checked += 1
+            src = await fetch_source_article(candidate.get("link", ""))
+            if len(src.get("text", "").split()) >= MIN_SOURCE_WORDS:
+                batch.append(candidate)
+                sources[candidate.get("link")] = src
+        logger.info(f"Readable source found for {len(batch)} of {checked} checked stories.")
+        if not batch and new_articles:
+            # Nothing readable: let the AI research the newest story with Google Search instead
+            batch = new_articles[:1]
         if batch:
             state.set_float("last_ai_run", time.time())
         logger.info(f"Processing a safe batch of {len(batch)} new articles to avoid Gemini rate limits...")
@@ -206,7 +223,7 @@ async def _run_news_pipeline() -> dict:
         import asyncio
         async def process_single(raw_news):
             try:
-                ai_res = await process_article_with_ai(raw_news)
+                ai_res = await process_article_with_ai(raw_news, sources.get(raw_news.get("link")))
                 return raw_news, ai_res
             except Exception as e:
                 logger.error(f"AI error for {raw_news.get('title')}: {e}")
