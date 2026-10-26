@@ -58,6 +58,6 @@ def get_system_status():
         "scheduler": "running",
         "gemini_configured": key_configured,
         "key_prefix": key_prefix,
-        "database_url": settings.DATABASE_URL.split("@")[-1] if settings.DATABASE_URL else None,
+        "database_in_use": __import__("app.database", fromlist=["engine"]).engine.dialect.name,
         "message": "Automation service is active and runs every 5 minutes."
     }

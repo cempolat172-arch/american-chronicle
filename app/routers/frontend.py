@@ -141,6 +141,10 @@ def build_trend_links(db: Session, trends=None):
     return links
 
 
+router = APIRouter(tags=["frontend"])
+
+templates = Jinja2Templates(directory="app/templates")
+
 @router.get("/")
 def read_index(request: Request, db: Session = Depends(get_db)):
     """
