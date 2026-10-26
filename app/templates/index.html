@@ -17,7 +17,7 @@
     <meta name="description" content="The American Chronicle delivers the latest breaking news, exclusive political stories, and bizarre events unfolding across the nation. Authentic and unapologetic.">
     <!-- Dört Dörtlük SEO: Canonical & Robots -->
     <link rel="canonical" href="https://theuschronicle.com{% if category %}/category/{{ category }}{% else %}/{% endif %}">
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    {% if search_query %}<meta name="robots" content="noindex, follow">{% else %}<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">{% endif %}
 
     <!-- Dört Dörtlük SEO: Open Graph (Facebook, LinkedIn, Pinterest) -->
     <meta property="og:locale" content="en_US">
