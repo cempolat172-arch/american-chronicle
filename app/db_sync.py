@@ -50,10 +50,22 @@ def sync_bundled_articles():
     with engine.begin() as conn:
         existing_slugs = {r[0] for r in conn.execute(text("SELECT slug FROM news_articles"))}
         existing_urls = {r[0] for r in conn.execute(text("SELECT original_url FROM news_articles"))}
-        added = 0
+        added = updated = 0
+        editable = [c for c in ("title", "content", "seo_description", "keywords", "image_url", "published_at")
+                    if c in cols]
         for row in rows:
             data = dict(row)
-            if data["slug"] in existing_slugs or data["original_url"] in existing_urls:
+            if data["slug"] in existing_slugs:
+                # Hand-written (bundled) article already live: push corrections made in news.db
+                values = {c: (_to_datetime(data[c]) if c == "published_at" else data[c]) for c in editable}
+                live = conn.execute(text(f"SELECT {', '.join(editable)} FROM news_articles WHERE slug = :slug"),
+                                    {"slug": data["slug"]}).mappings().first()
+                if live and any(live[c] != values[c] for c in editable):
+                    conn.execute(text(f"UPDATE news_articles SET {', '.join(f'{c} = :{c}' for c in editable)} "
+                                      f"WHERE slug = :slug"), {**values, "slug": data["slug"]})
+                    updated += 1
+                continue
+            if data["original_url"] in existing_urls:
                 continue
             for key in ("published_at", "created_at"):
                 if key in data:
@@ -73,4 +85,4 @@ def sync_bundled_articles():
             existing_slugs.add(data["slug"])
             existing_urls.add(data["original_url"])
             added += 1
-    logger.info(f"db_sync: {added} bundled article(s) copied to the live database ({len(rows)} in news.db).")
+    logger.info(f"db_sync: {added} bundled article(s) added, {updated} updated ({len(rows)} in news.db).")
