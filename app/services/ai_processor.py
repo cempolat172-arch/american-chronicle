@@ -142,45 +142,154 @@ Return ONLY raw JSON (no ``` fences) with exactly these keys:
 """
 
 
-_QUOTA_COOLDOWN_UNTIL = 0.0  # epoch seconds; while in the future, Gemini is not called
-QUOTA_COOLDOWN_SECONDS = 30 * 60
+# ---------------------------------------------------------------------------------------------
+# Model chain: best model first; when its free daily quota is used up, fall back to the next one.
+# Free tier (Oct 2026): Flash ~20 req/day, Flash-Lite ~500/day each, Gemma ~14k/day.
+# Model names are discovered from the API (ListModels) so new versions are picked up automatically.
+# ---------------------------------------------------------------------------------------------
+PRIMARY_MODEL = GEMINI_MODEL
+SEARCH_MODEL = "gemini-2.5-flash"  # Google Search grounding is only free on Gemini 2.5 models
+FALLBACK_GUESSES = ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-2.5-flash-lite", "gemma-4-31b-it"]
+_models_cache = {"time": 0.0, "names": []}
+_model_cooldowns = {}  # model -> epoch seconds until which it is skipped
+
+
+def _next_quota_reset() -> float:
+    """Daily quotas reset at midnight Pacific time."""
+    from datetime import datetime, timedelta
+    from zoneinfo import ZoneInfo
+    now = datetime.now(ZoneInfo("America/Los_Angeles"))
+    reset = (now + timedelta(days=1)).replace(hour=0, minute=5, second=0, microsecond=0)
+    return reset.timestamp()
+
+
+def _cooldown_until(model: str) -> float:
+    from app.services import state
+    return max(_model_cooldowns.get(model, 0.0), state.get_float(f"cooldown:{model}"))
+
+
+def _set_cooldown(model: str, until: float, reason: str):
+    from app.services import state
+    import time
+    _model_cooldowns[model] = until
+    state.set_float(f"cooldown:{model}", until)
+    logger.warning(f"Gemini model {model} paused for {int((until - time.time()) // 60)} min ({reason}).")
+
+
+async def _available_models(api_key: str) -> list:
+    import time
+    if _models_cache["names"] and time.time() - _models_cache["time"] < 6 * 3600:
+        return _models_cache["names"]
+    names = []
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.get("https://generativelanguage.googleapis.com/v1beta/models",
+                                    params={"pageSize": 1000}, headers={"x-goog-api-key": api_key})
+        if resp.status_code == 200:
+            for m in resp.json().get("models", []):
+                if "generateContent" in m.get("supportedGenerationMethods", []):
+                    names.append(m["name"].split("/", 1)[-1])
+    except Exception as e:
+        logger.warning(f"Could not list Gemini models: {e}")
+    if names:
+        _models_cache.update(time=time.time(), names=names)
+    return names
+
+
+def _version(name: str) -> float:
+    m = re.search(r"-(\d+(?:\.\d+)?)-", name)
+    return float(m.group(1)) if m else 0.0
+
+
+async def _model_chain(api_key: str) -> list:
+    names = await _available_models(api_key)
+    chain = [PRIMARY_MODEL]
+    if names:
+        bad = re.compile(r"image|tts|audio|live|vision|embedding|thinking|exp", re.I)
+        lite = [n for n in names if re.match(r"gemini-\d+(\.\d+)?-flash-lite", n) and not bad.search(n)]
+        # newest version first; for the same version prefer the plain alias over dated snapshots
+        lite.sort(key=lambda n: (-_version(n), len(n)))
+        seen_versions, lite_pick = set(), []
+        for n in lite:
+            if _version(n) not in seen_versions:
+                seen_versions.add(_version(n))
+                lite_pick.append(n)
+        gemma = [n for n in names if re.match(r"gemma-\d+-\d+b", n) and not bad.search(n)]
+        gemma.sort(key=lambda n: (-int(re.match(r"gemma-(\d+)", n).group(1)),
+                                  -int(re.search(r"-(\d+)b", n).group(1))))
+        chain += lite_pick[:2] + gemma[:1]
+    else:
+        chain += FALLBACK_GUESSES
+    out = []
+    for m in chain:
+        if m not in out:
+            out.append(m)
+    return out
 
 
 def gemini_in_cooldown() -> bool:
+    """True only when every model in the chain is paused (checked cheaply from stored state)."""
     import time
     from app.services import state
-    return time.time() < max(_QUOTA_COOLDOWN_UNTIL, state.get_float("gemini_cooldown_until"))
+    return time.time() < state.get_float("gemini_all_paused_until")
 
 
-async def _call_gemini(prompt: str, api_key: str, use_search: bool) -> Optional[str]:
-    global _QUOTA_COOLDOWN_UNTIL
+async def _call_model(model: str, prompt: str, api_key: str, use_search: bool):
+    """Returns (text, status). status: ok | quota | unavailable | error"""
     import time
-    if gemini_in_cooldown():
-        return None
-    # API key goes in a header (not the URL) so it never appears in server logs
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
     payload = {"contents": [{"parts": [{"text": prompt}]}], "generationConfig": {"temperature": 0.7}}
     if use_search:
         payload["tools"] = [{"google_search": {}}]
-    else:
+    elif not model.startswith("gemma"):
         payload["generationConfig"]["responseMimeType"] = "application/json"
     try:
+        # API key goes in a header (not the URL) so it never appears in server logs
         async with httpx.AsyncClient(timeout=120.0) as http_client:
             resp = await http_client.post(url, json=payload, headers={"x-goog-api-key": api_key})
-        if resp.status_code == 429:
-            _QUOTA_COOLDOWN_UNTIL = time.time() + QUOTA_COOLDOWN_SECONDS
-            from app.services import state
-            state.set_float("gemini_cooldown_until", _QUOTA_COOLDOWN_UNTIL)
-            logger.warning("Gemini quota exceeded (429). Pausing AI writing for 30 minutes.")
-            return None
-        if resp.status_code != 200:
-            logger.warning(f"Gemini API status {resp.status_code}: {resp.text[:300]}")
-            return None
-        parts = resp.json()["candidates"][0]["content"]["parts"]
-        return "".join(p.get("text", "") for p in parts)
     except Exception as e:
-        logger.warning(f"Gemini call failed: {e}")
-        return None
+        logger.warning(f"Gemini call failed ({model}): {e}")
+        return None, "error"
+    if resp.status_code == 429:
+        daily = "PerDay" in resp.text or "per day" in resp.text.lower()
+        _set_cooldown(model, _next_quota_reset() if daily else time.time() + 120,
+                      "daily quota used up" if daily else "per-minute limit")
+        return None, "quota"
+    if resp.status_code in (400, 403, 404):
+        _set_cooldown(model, time.time() + 6 * 3600, f"unavailable, HTTP {resp.status_code}")
+        logger.warning(f"{model}: {resp.text[:200]}")
+        return None, "unavailable"
+    if resp.status_code != 200:
+        logger.warning(f"Gemini API status {resp.status_code} ({model}): {resp.text[:300]}")
+        return None, "error"
+    try:
+        parts = resp.json()["candidates"][0]["content"]["parts"]
+        return "".join(p.get("text", "") for p in parts), "ok"
+    except Exception as e:
+        logger.warning(f"Unexpected Gemini response ({model}): {e}")
+        return None, "error"
+
+
+async def _call_gemini(prompt: str, api_key: str, use_search: bool) -> Optional[str]:
+    import time
+    from app.services import state
+    chain = [SEARCH_MODEL] if use_search else await _model_chain(api_key)
+    for model in chain:
+        if time.time() < _cooldown_until(model):
+            continue
+        text, status = await _call_model(model, prompt, api_key, use_search)
+        if status == "ok":
+            logger.info(f"Article written with {model}.")
+            return text
+        if status == "error":
+            return None
+        # quota/unavailable -> try the next model
+    if not use_search:
+        soonest = min((_cooldown_until(m) for m in chain), default=0.0)
+        if soonest > time.time():
+            state.set_float("gemini_all_paused_until", soonest)
+            logger.warning(f"All Gemini models paused until {time.strftime('%H:%M UTC', time.gmtime(soonest))}.")
+    return None
 
 
 def _parse_json(text: str) -> Optional[dict]:
