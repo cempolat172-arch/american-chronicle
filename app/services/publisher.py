@@ -123,7 +123,6 @@ def publish_article(db: Session, raw_news: dict, ai_result: dict) -> Optional[Ne
         return None
 
 _PIPELINE_LOCK = None
-_LAST_AI_RUN = 0.0  # epoch seconds of the last AI writing attempt
 
 
 async def run_news_pipeline() -> dict:
@@ -189,8 +188,9 @@ async def _run_news_pipeline() -> dict:
         from app.services.ai_processor import gemini_in_cooldown
         from app.config import settings
         import time
-        global _LAST_AI_RUN
-        wait_left = _LAST_AI_RUN + settings.ARTICLE_INTERVAL_MINUTES * 60 - time.time()
+        from app.services import state
+        last_ai_run = state.get_float("last_ai_run")
+        wait_left = last_ai_run + settings.ARTICLE_INTERVAL_MINUTES * 60 - time.time()
         if wait_left > 0:
             logger.info(f"Next article slot in {int(wait_left // 60)} min (free-tier pacing).")
             return {"status": "waiting", "message": f"Next article in {int(wait_left // 60)} min.", "pending_in_queue": len(new_articles)}
@@ -199,7 +199,7 @@ async def _run_news_pipeline() -> dict:
             return {"status": "cooldown", "message": "Gemini quota exceeded, waiting.", "pending_in_queue": len(new_articles)}
         batch = new_articles[:max(1, settings.ARTICLES_PER_RUN)]
         if batch:
-            _LAST_AI_RUN = time.time()
+            state.set_float("last_ai_run", time.time())
         logger.info(f"Processing a safe batch of {len(batch)} new articles to avoid Gemini rate limits...")
         
         # Step 3: Process AI generation concurrently

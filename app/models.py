@@ -22,3 +22,11 @@ class NewsArticle(Base):
     
     image_url = Column(String, nullable=True)
     keywords = Column(String, nullable=True)
+
+
+class AppState(Base):
+    """Small key/value store so timers survive restarts (e.g. Gemini pacing and quota cooldown)."""
+    __tablename__ = "app_state"
+
+    key = Column(String, primary_key=True)
+    value = Column(String, nullable=True)

@@ -148,7 +148,8 @@ QUOTA_COOLDOWN_SECONDS = 30 * 60
 
 def gemini_in_cooldown() -> bool:
     import time
-    return time.time() < _QUOTA_COOLDOWN_UNTIL
+    from app.services import state
+    return time.time() < max(_QUOTA_COOLDOWN_UNTIL, state.get_float("gemini_cooldown_until"))
 
 
 async def _call_gemini(prompt: str, api_key: str, use_search: bool) -> Optional[str]:
@@ -168,6 +169,8 @@ async def _call_gemini(prompt: str, api_key: str, use_search: bool) -> Optional[
             resp = await http_client.post(url, json=payload, headers={"x-goog-api-key": api_key})
         if resp.status_code == 429:
             _QUOTA_COOLDOWN_UNTIL = time.time() + QUOTA_COOLDOWN_SECONDS
+            from app.services import state
+            state.set_float("gemini_cooldown_until", _QUOTA_COOLDOWN_UNTIL)
             logger.warning("Gemini quota exceeded (429). Pausing AI writing for 30 minutes.")
             return None
         if resp.status_code != 200:
