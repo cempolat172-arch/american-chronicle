@@ -173,13 +173,23 @@ async def _run_news_pipeline(force: bool = False) -> dict:
         # Sort by published date descending (newest first) so the site is always fresh
         fresh.sort(key=lambda x: x['published'], reverse=True)
 
+        # Titles we already published in the last 36 hours (stored in the DB, so restarts don't matter)
+        recent_cutoff = datetime.now(timezone.utc) - timedelta(hours=36)
+        try:
+            recent_titles = [t for (t,) in db.query(NewsArticle.title)
+                             .filter(NewsArticle.published_at >= recent_cutoff).all()]
+        except Exception as e:
+            logger.warning(f"Could not load recent titles: {e}")
+            recent_titles = []
+        recent_sigs = [_title_signature(t) for t in recent_titles]
+
         # Drop duplicates of the same story coming from different outlets
         new_articles = []
         for n in fresh:
             sig = _title_signature(n.get('title', ''))
             if not sig or _is_duplicate_story(sig, [_title_signature(a.get('title', '')) for a in new_articles]):
                 continue
-            if _is_duplicate_story(sig, _RECENT_STORY_SIGNATURES):
+            if _is_duplicate_story(sig, _RECENT_STORY_SIGNATURES) or _is_duplicate_story(sig, recent_sigs):
                 continue
             new_articles.append(n)
         logger.info(f"Fresh (<{FRESH_HOURS}h) unique stories: {len(new_articles)} | skipped old: {skipped_old}")

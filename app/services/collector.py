@@ -60,7 +60,15 @@ async def fetch_feed(url: str, client: httpx.AsyncClient):
         logger.error(f"Unexpected error fetching feed {url}: {e}")
     return None
 
-SPAM_KEYWORDS = [
+# Gambling promos / betting tips: no news value and restricted by Google AdSense policies
+BETTING_KEYWORDS = [
+    "bonus code", "promo code", "sportsbook", "betmgm", "draftkings", "fanduel", "caesars sportsbook",
+    "bet365", "fanatics sportsbook", "parlay", "best bets", "betting", "odds and picks", "odds, picks",
+    "picks and odds", "prediction, odds", "predictions", "player props", "first touchdown scorer",
+    "anytime touchdown", "spread pick", "over/under pick",
+]
+
+SPAM_KEYWORDS = BETTING_KEYWORDS + [
     "stream", "livestream", "watch live", "nfhs", "!+", "√", "☯️", 
     "high school", "varsity", "prep football", "where to watch", 
     "how to watch", "free live", "tv broadcast"
