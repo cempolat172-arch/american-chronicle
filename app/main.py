@@ -29,8 +29,11 @@ async def lifespan(app: FastAPI):
                 conn.execute(text("ALTER TABLE news_articles ADD COLUMN keywords VARCHAR"))
             logger.info("Added 'keywords' column to news_articles.")
         # Copy articles from the bundled news.db into Supabase (only ones not there yet)
-        from app.db_sync import sync_bundled_articles
+        from app.db_sync import sync_bundled_articles, remove_unwanted_articles
         sync_bundled_articles()
+        remove_unwanted_articles()
+        from app.services.images import migrate_images_v2
+        migrate_images_v2()
         logger.info("Database tables verified/created successfully.")
     except OperationalError as e:
         logger.error(f"Failed to connect to the database on startup: {e}")

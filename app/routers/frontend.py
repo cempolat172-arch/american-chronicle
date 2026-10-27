@@ -137,9 +137,53 @@ def build_trend_links(db: Session, trends=None):
         except Exception as e:
             logger.warning(f"Trend link lookup failed for '{term}': {e}")
         url = f"/article/{article.slug}" if article else f"/search?q={urllib.parse.quote(term)}"
-        links.append({"term": term, "url": url, "has_article": bool(article)})
+        links.append({"term": term, "url": url, "has_article": bool(article),
+                      "title": article.title if article else None})
     return links
 
+
+
+# ---------------------------------------------------------------------------------------------
+# Article page helpers: server-side Markdown rendering and internal links (related / latest)
+# ---------------------------------------------------------------------------------------------
+_STOP = set("""the a an and or of to in on at for with from by as is are was were be been it its this that
+these those after over into amid says said new news vs his her their they he she will can could would
+about how why what who when where up out off more than not no just what's here""".split())
+
+
+def render_markdown(md_text: str) -> str:
+    """Article Markdown -> HTML on the server, so search engines see the full text without JavaScript."""
+    try:
+        import markdown as _md
+    except Exception:
+        return ""
+    html_out = _md.markdown(md_text or "", extensions=["extra", "sane_lists", "nl2br"])
+    # Defensive cleanup of anything executable that an AI-written article could contain
+    html_out = re.sub(r"(?is)<(script|iframe|style|object|embed)[^>]*>.*?</\1>", "", html_out)
+    html_out = re.sub(r"(?is)<(script|iframe|style|object|embed)[^>]*/?>", "", html_out)
+    html_out = re.sub(r"""(?i)\son\w+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)""", "", html_out)
+    html_out = re.sub(r'(?i)href\s*=\s*"\s*javascript:[^"]*"', 'href="#"', html_out)
+    return html_out
+
+
+def _words(text_value: str) -> set:
+    return {w for w in re.findall(r"[a-z0-9']+", (text_value or "").lower()) if len(w) > 2 and w not in _STOP}
+
+
+def related_and_latest(db: Session, article, n_related: int = 4, n_latest: int = 5):
+    recent = (db.query(NewsArticle).filter(NewsArticle.id != article.id)
+              .order_by(NewsArticle.published_at.desc()).limit(120).all())
+    me = _words(f"{article.title} {article.keywords or ''}")
+    scored = []
+    for a in recent:
+        score = len(me & _words(f"{a.title} {a.keywords or ''}"))
+        if score >= 2:
+            scored.append((score, a))
+    scored.sort(key=lambda x: x[0], reverse=True)
+    related = [a for _, a in scored[:n_related]]
+    taken = {a.id for a in related}
+    latest = [a for a in recent if a.id not in taken][:n_latest]
+    return related, latest
 
 router = APIRouter(tags=["frontend"])
 
@@ -296,15 +340,24 @@ def read_article(request: Request, slug: str, db: Session = Depends(get_db)):
     """
     Renders the SEO-optimized article detail view.
     """
+    from app.removed import REMOVED_SLUGS
+    if slug in REMOVED_SLUGS:
+        return Response(content="<h1>410 Gone</h1><p>This article has been permanently removed.</p>"
+                                "<p><a href='/'>Back to The American Chronicle</a></p>",
+                        status_code=410, media_type="text/html")
     article = db.query(NewsArticle).filter(NewsArticle.slug == slug).first()
     if not article:
         raise HTTPException(status_code=404, detail="Article not found")
-        
+
+    related, latest = related_and_latest(db, article)
     return templates.TemplateResponse(
         request,
         "article.html", 
         {
             "article": article,
+            "content_html": render_markdown(article.content),
+            "related": related,
+            "latest": latest,
             "live_trends": get_live_trends(), "trend_links": build_trend_links(db)
         }
     )
@@ -315,6 +368,24 @@ def play_game(request: Request):
     Renders the custom HTML5 Canvas Agar.io style game.
     """
     return templates.TemplateResponse(request, "game_agar.html")
+
+@router.get("/about")
+def read_about(request: Request):
+    return templates.TemplateResponse(request, "about.html")
+
+
+@router.get("/contact")
+def read_contact(request: Request):
+    return templates.TemplateResponse(request, "contact.html")
+
+
+from app.services.indexnow import INDEXNOW_KEY as _INDEXNOW_KEY
+
+
+@router.get(f"/{_INDEXNOW_KEY}.txt")
+def indexnow_key():
+    return Response(content=_INDEXNOW_KEY, media_type="text/plain")
+
 
 @router.get("/legal")
 def read_legal(request: Request):
@@ -418,6 +489,10 @@ def generate_sitemap(db: Session = Depends(get_db)):
     xml_content += '    <priority>1.0</priority>\n'
     xml_content += '  </url>\n'
     
+    # Add static pages
+    for page in ("about", "contact", "legal"):
+        xml_content += f'  <url>\n    <loc>{base_url}/{page}</loc>\n    <changefreq>monthly</changefreq>\n    <priority>0.3</priority>\n  </url>\n'
+
     # Add Categories
     categories = ["ai", "politics", "tabloids", "tech", "astrology", "sports", "world"]
     for cat in categories:

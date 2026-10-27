@@ -189,7 +189,7 @@
                         {% for article in bizarre %}
                         <article class="{% if loop.index == 1 %}md:col-span-2 border-b border-gray-300 pb-10{% else %}border-t border-gray-300 pt-8 md:border-t-0 md:pt-0{% endif %}">
                             <a href="/article/{{ article.slug }}"  class="block mb-4 overflow-hidden border-4 border-double border-black">
-                                <img src="https://theuschronicle.com/img/{{ article.slug }}.jpg" alt="{{ article.title }}" {% if loop.index == 1 %}fetchpriority="high"{% else %}loading="lazy"{% endif %} width="800" height="600" class="w-full h-auto grayscale contrast-[1.2] hover:grayscale-0 transition duration-700 ease-in-out mix-blend-multiply">
+                                <img src="https://theuschronicle.com/img/{{ article.slug }}.jpg" alt="{{ article.title }}" {% if loop.index == 1 %}fetchpriority="high"{% else %}loading="lazy"{% endif %} width="1200" height="675" class="w-full h-auto grayscale contrast-[1.2] hover:grayscale-0 transition duration-700 ease-in-out mix-blend-multiply">
                             </a>
                             <header class="mb-4">
                                 <h3 class="text-3xl {% if loop.index == 1 %}md:text-5xl lg:text-6xl{% else %}md:text-3xl{% endif %} font-black leading-tight hover:text-gray-600 transition-colors cursor-pointer">
@@ -241,7 +241,7 @@
                         <li class="border-b border-gray-200 pb-8 last:border-0">
                             <a href="/article/{{ article.slug }}"  class="block group">
                                 <div class="mb-3 overflow-hidden border border-black">
-                                    <img src="https://theuschronicle.com/img/{{ article.slug }}.jpg" alt="{{ article.title }}" loading="lazy" width="800" height="600" class="w-full h-40 object-cover grayscale contrast-[1.2] group-hover:grayscale-0 transition duration-700 ease-in-out mix-blend-multiply">
+                                    <img src="https://theuschronicle.com/img/{{ article.slug }}.jpg" alt="{{ article.title }}" loading="lazy" width="1200" height="675" class="w-full h-40 object-cover grayscale contrast-[1.2] group-hover:grayscale-0 transition duration-700 ease-in-out mix-blend-multiply">
                                 </div>
                                 <h3 class="text-2xl font-bold leading-tight group-hover:text-gray-600 transition-colors mb-3">
                                     {{ article.title }}
@@ -273,126 +273,36 @@
             </div>
         </main>
 
-        <!-- GOOGLE TRENDING RADAR: HIGH-VOLUME SEARCH DOSSIER (SEO POWERHOUSE) -->
-        <section class="border-t-4 border-black pt-8 pb-12 mt-12 bg-gray-50 p-6 md:p-10 border-b-4 border-double">
-            <div class="flex flex-col md:flex-row md:items-end justify-between border-b-2 border-black pb-4 mb-8">
-                <div>
-                    <span class="bg-red-700 text-white text-[10px] uppercase font-bold tracking-widest px-2 py-1">REAL-TIME SEARCH INTELLIGENCE</span>
-                    <h2 class="font-serif font-black text-2xl md:text-4xl uppercase tracking-tight mt-2 text-gray-900">Google Trends Radar: What America Is Searching Tonight</h2>
-                </div>
-                <p class="text-xs font-sans text-gray-600 mt-2 md:mt-0 uppercase tracking-widest font-semibold">
-                    Live Keyword Index & Deep Dive Reports
-                </p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                
-                <!-- Trend 1: 2026 World Series Thriller -->
-                <article class="bg-white border-2 border-black p-5 shadow-sm hover:shadow-md transition">
-                    <span class="text-[10px] font-black text-red-700 uppercase tracking-widest block mb-1">⚾ 1.2M+ SEARCHES | 2026 WORLD SERIES SHOWDOWN</span>
-                    <h3 class="font-serif font-bold text-xl leading-snug mb-3">
-                        <a href="/article/fall-classic-drama-milwaukee-brewers-2-0-world-series-lead-tampa-bay-rays-2026" class="hover:text-red-700 hover:underline">Fall Classic Drama: Milwaukee Brewers Take Stranglehold 2-0 World Series Lead Over Tampa Bay Rays</a>
-                    </h3>
-                    <p class="text-xs font-sans text-gray-700 leading-relaxed mb-4">
-                        Milwaukee rallies from an early four-run deficit to stun Tampa Bay 5-4 in Game 2, seizing a commanding 2-0 Fall Classic lead as the championship shifts to Florida for Monday's Game 3.
-                    </p>
-                    <div class="border-t border-gray-200 pt-3 text-[10px] font-sans text-gray-500 uppercase tracking-wider flex justify-between items-center">
-                        <span class="font-bold text-black">SEO Keywords:</span>
-                        <span>#WorldSeries2026 #BrewersVsRays #TropicanaField</span>
-                    </div>
-                </article>
-
-                <!-- Trend 2: Midterm Early Voting Record Surge -->
-                <article class="bg-white border-2 border-black p-5 shadow-sm hover:shadow-md transition">
-                    <span class="text-[10px] font-black text-emerald-700 uppercase tracking-widest block mb-1">🗳️ 1.4M+ SEARCHES | RECORD EARLY VOTING TURNOUT</span>
-                    <h3 class="font-serif font-bold text-xl leading-snug mb-3">
-                        <a href="/article/midterm-turnout-tsunami-18-million-ballots-cast-early-battleground-states-smash-records-2026" class="hover:text-emerald-700 hover:underline">Midterm Turnout Tsunami: Over 18 Million Ballots Cast Early as Battleground States Smash Records</a>
-                    </h3>
-                    <p class="text-xs font-sans text-gray-700 leading-relaxed mb-4">
-                        Civic mobilization surges across Georgia, Pennsylvania, and Arizona as early voting totals shatter all previous midterm benchmarks nine days before the decisive November 3 election.
-                    </p>
-                    <div class="border-t border-gray-200 pt-3 text-[10px] font-sans text-gray-500 uppercase tracking-wider flex justify-between items-center">
-                        <span class="font-bold text-black">SEO Keywords:</span>
-                        <span>#EarlyVoting2026 #MidtermTurnout #BattlegroundSenate</span>
-                    </div>
-                </article>
-
-                <!-- Trend 3: Texas A&M vs Alabama Kyle Field Upset -->
-                <article class="bg-white border-2 border-black p-5 shadow-sm hover:shadow-md transition">
-                    <span class="text-[10px] font-black text-amber-700 uppercase tracking-widest block mb-1">🏈 1.5M+ SEARCHES | SEC COLLEGE FOOTBALL SHOCKER</span>
-                    <h3 class="font-serif font-bold text-xl leading-snug mb-3">
-                        <a href="/article/sec-earthquake-texas-am-stuns-no-1-alabama-kyle-field-thrilling-overtime-classic-2026" class="hover:text-amber-700 hover:underline">SEC Earthquake: Texas A&M Stuns No. 1 Alabama at Kyle Field in Thrilling Overtime Classic</a>
-                    </h3>
-                    <p class="text-xs font-sans text-gray-700 leading-relaxed mb-4">
-                        Kyle Field descends into absolute bedlam as Texas A&M topples top-ranked Alabama 38-35 in double overtime, tossing the national College Football Playoff race into utter chaos.
-                    </p>
-                    <div class="border-t border-gray-200 pt-3 text-[10px] font-sans text-gray-500 uppercase tracking-wider flex justify-between items-center">
-                        <span class="font-bold text-black">SEO Keywords:</span>
-                        <span>#TexasAMvsAlabama #KyleFieldUpset #CollegeFootballPlayoff</span>
-                    </div>
-                </article>
-
-                <!-- Trend 4: Daylight Saving Time Confusion & Sunshine Act -->
-                <article class="bg-white border-2 border-black p-5 shadow-sm hover:shadow-md transition">
-                    <span class="text-[10px] font-black text-indigo-700 uppercase tracking-widest block mb-1">⏰ 1.1M+ SEARCHES | DAYLIGHT SAVING PANIC</span>
-                    <h3 class="font-serif font-bold text-xl leading-snug mb-3">
-                        <a href="/article/clock-fall-back-panic-millions-search-daylight-saving-2026-congress-revives-sunshine-act" class="hover:text-indigo-700 hover:underline">Clock Fall-Back Panic: Millions Search Daylight Saving 2026 as Congress Revives Sunshine Act</a>
-                    </h3>
-                    <p class="text-xs font-sans text-gray-700 leading-relaxed mb-4">
-                        Widespread confusion over the November 1 clock change triggers massive Google search volumes as lawmakers mount an aggressive bipartisan push to make Daylight Saving Time permanent.
-                    </p>
-                    <div class="border-t border-gray-200 pt-3 text-[10px] font-sans text-gray-500 uppercase tracking-wider flex justify-between items-center">
-                        <span class="font-bold text-black">SEO Keywords:</span>
-                        <span>#DaylightSaving2026 #ClocksGoBack #SunshineProtectionAct</span>
-                    </div>
-                </article>
-
-                <!-- Trend 5: Big Tech Nuclear Energy for AI -->
-                <article class="bg-white border-2 border-black p-5 shadow-sm hover:shadow-md transition">
-                    <span class="text-[10px] font-black text-blue-700 uppercase tracking-widest block mb-1">⚡ 900K+ SEARCHES | BIG TECH NUCLEAR AI RACE</span>
-                    <h3 class="font-serif font-bold text-xl leading-snug mb-3">
-                        <a href="/article/nuclear-ai-surge-tech-giants-ink-historic-reactor-deals-power-supercomputer-data-centers-2026" class="hover:text-blue-700 hover:underline">Nuclear AI Surge: Tech Giants Ink Historic Reactor Deals to Power Supercomputer Data Centers</a>
-                    </h3>
-                    <p class="text-xs font-sans text-gray-700 leading-relaxed mb-4">
-                        Google, Amazon, and Microsoft commit billions to small modular nuclear reactors to fuel power-hungry AI clusters, sparking a high-stakes national debate over electrical grid stability.
-                    </p>
-                    <div class="border-t border-gray-200 pt-3 text-[10px] font-sans text-gray-500 uppercase tracking-wider flex justify-between items-center">
-                        <span class="font-bold text-black">SEO Keywords:</span>
-                        <span>#BigTechNuclear #AINuclearEnergy #SmallModularReactors</span>
-                    </div>
-                </article>
-
-                <!-- Trend 6: Halloween Cinema / Terrifier 3 & Smile 2 -->
-                <article class="bg-white border-2 border-black p-5 shadow-sm hover:shadow-md transition">
-                    <span class="text-[10px] font-black text-purple-700 uppercase tracking-widest block mb-1">🎃 950K+ SEARCHES | HALLOWEEN CINEMA CARNAGE</span>
-                    <h3 class="font-serif font-bold text-xl leading-snug mb-3">
-                        <a href="/article/halloween-cinema-carnage-indie-slasher-terrifier-3-smile-2-dominate-fall-box-office-2026" class="hover:text-purple-700 hover:underline">Halloween Cinema Carnage: Indie Slasher 'Terrifier 3' and 'Smile 2' Dominate Fall Box Office</a>
-                    </h3>
-                    <p class="text-xs font-sans text-gray-700 leading-relaxed mb-4">
-                        Art the Clown and the Smile franchise shatter independent horror box office records as moviegoers flood theaters for a historic autumn genre showdown ahead of Halloween.
-                    </p>
-                    <div class="border-t border-gray-200 pt-3 text-[10px] font-sans text-gray-500 uppercase tracking-wider flex justify-between items-center">
-                        <span class="font-bold text-black">SEO Keywords:</span>
-                        <span>#Terrifier3Records #Smile2BoxOffice #HalloweenMovies2026</span>
-                    </div>
-                </article>
-
-            </div>
+        <!-- Trending searches: today's real Google Trends, linked to our coverage -->
+        {% set covered = trend_links | selectattr("has_article") | list if trend_links else [] %}
+        {% if covered %}
+        <section class="border-t-4 border-black pt-8 pb-10 mt-12 bg-gray-50 p-6 md:p-10 border-b-4 border-double">
+            <h2 class="text-2xl font-black uppercase tracking-widest text-gray-900 mb-2">Trending in the U.S. Right Now</h2>
+            <p class="text-xs font-sans text-gray-600 mb-6">What Americans are searching for today, and our latest coverage of each story.</p>
+            <ul class="grid grid-cols-1 md:grid-cols-2 gap-x-8">
+                {% for t in covered %}
+                <li class="border-b border-gray-200 py-3">
+                    <span class="block text-[10px] font-sans uppercase tracking-widest text-red-700 font-bold">{{ t.term | title }}</span>
+                    <a href="{{ t.url }}" class="font-bold text-gray-900 hover:underline">{{ t.title }}</a>
+                </li>
+                {% endfor %}
+            </ul>
         </section>
+        {% endif %}
 
 
         <!-- Footer -->
         <footer class="border-t-4 border-double border-black py-12 mt-auto text-center font-sans">
             <h4 class="font-serif font-black text-3xl mb-4 text-gray-900">The American Chronicle</h4>
             <div class="flex justify-center items-center gap-4 text-[10px] text-gray-600 uppercase tracking-widest mb-8 font-bold">
-                <a href="/legal" class="hover:text-black hover:underline">Legal & Disclaimers</a>
+                <a href="/about" class="hover:text-black hover:underline">About Us</a>
                 <span>|</span>
-                <a href="/legal" class="hover:text-black hover:underline">Notice & Takedown</a>
+                <a href="/contact" class="hover:text-black hover:underline">Contact</a>
                 <span>|</span>
-                <a href="mailto:legal@theamericanchronicle.com" class="hover:text-black hover:underline">Contact Us</a>
+                <a href="/legal" class="hover:text-black hover:underline">Legal, Privacy & Takedown</a>
             </div>
             <div class="max-w-3xl mx-auto text-[11px] text-gray-600 leading-relaxed border-t border-gray-200 pt-8 text-justify md:text-center px-4">
-                <strong>LEGAL DISCLAIMER:</strong> The US Chronicle is an autonomous AI-driven digital publication. Articles may use satirical, exaggerated, or fictionalized elements for entertainment purposes. All content is generated algorithmically.
+                <strong>EDITORIAL NOTE:</strong> The American Chronicle publishes news articles written with the assistance of AI, based on reporting from the publications linked in each story. Spotted an error? Email <a href="mailto:cempolat172@gmail.com" class="underline">cempolat172@gmail.com</a> and we will review and correct it.
             </div>
             <p class="text-[10px] text-gray-600 uppercase tracking-widest mt-6">Copyright © 2026. All Rights Reserved.</p>
         </footer>

@@ -251,8 +251,11 @@ async def _run_news_pipeline(force: bool = False) -> dict:
             if isinstance(res, tuple):
                 raw, ai_res = res
                 if ai_res:
-                    if publish_article(db, raw, ai_res):
+                    new_article = publish_article(db, raw, ai_res)
+                    if new_article:
                         published_count += 1
+                        from app.services.indexnow import ping_async, article_url
+                        await ping_async([article_url(new_article.slug)])
                         _remember_story(raw.get('title', ''))
                         
         return {

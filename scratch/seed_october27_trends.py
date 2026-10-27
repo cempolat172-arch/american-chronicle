@@ -179,7 +179,7 @@ Yes. The claim deadline was December 18, 2025."""
 
 def image_url(prompt, seed):
     full = prompt + ", ultra realistic, 4k, editorial photography, dramatic lighting, no text, no faces, no logos"
-    return f"https://image.pollinations.ai/prompt/{urllib.parse.quote(full)}?width=800&height=500&seed={seed}&nologo=true"
+    return f"https://image.pollinations.ai/prompt/{urllib.parse.quote(full)}?width=1200&height=675&seed={seed}&nologo=true"
 
 
 def seed_database():

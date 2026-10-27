@@ -14,6 +14,7 @@ from datetime import datetime, timezone
 from sqlalchemy import text
 
 from app.database import engine, IS_SQLITE
+from app.removed import REMOVED_SLUGS
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,27 @@ def _to_datetime(value):
     except ValueError:
         return None
     return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+
+
+def remove_unwanted_articles():
+    """Deletes articles listed in app/removed.py from the live database (they are served as 410 Gone)."""
+    from app.services.indexnow import ping, article_url
+    removed = []
+    try:
+        with engine.begin() as conn:
+            for slug in REMOVED_SLUGS:
+                res = conn.execute(text("DELETE FROM news_articles WHERE slug = :s"), {"s": slug})
+                try:
+                    conn.execute(text("DELETE FROM article_images WHERE slug = :s"), {"s": slug})
+                except Exception:
+                    pass
+                if res.rowcount:
+                    removed.append(slug)
+    except Exception as e:
+        logger.warning(f"remove_unwanted_articles failed: {e}")
+    if removed:
+        logger.info(f"Removed {len(removed)} unwanted article(s): {removed}")
+        ping([article_url(s) for s in removed])
 
 
 def sync_bundled_articles():
@@ -51,6 +73,7 @@ def sync_bundled_articles():
         existing_slugs = {r[0] for r in conn.execute(text("SELECT slug FROM news_articles"))}
         existing_urls = {r[0] for r in conn.execute(text("SELECT original_url FROM news_articles"))}
         added = updated = 0
+        added_slugs = []
         editable = [c for c in ("title", "content", "seo_description", "keywords", "image_url", "published_at")
                     if c in cols]
         for row in rows:
@@ -84,5 +107,9 @@ def sync_bundled_articles():
             )
             existing_slugs.add(data["slug"])
             existing_urls.add(data["original_url"])
+            added_slugs.append(data["slug"])
             added += 1
     logger.info(f"db_sync: {added} bundled article(s) added, {updated} updated ({len(rows)} in news.db).")
+    if added_slugs:
+        from app.services.indexnow import ping, article_url
+        ping([article_url(s) for s in added_slugs])

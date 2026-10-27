@@ -19,7 +19,8 @@ try:
 except Exception:  # Pillow optional; images are stored as-is without it
     Image = None
 
-MAX_WIDTH = 800
+MAX_WIDTH = 1200  # Google Discover large previews need >= 1200px wide images
+KEEP_DAYS = 60   # stored images older than this are pruned to stay within the free database size
 JPEG_QUALITY = 72
 
 
@@ -38,13 +39,48 @@ def _compress(data: bytes) -> bytes:
         return data
 
 
+def migrate_images_v2():
+    """One-time: switch all cover images to 1200x675 and regenerate them (runs once, tracked in app_state)."""
+    from sqlalchemy import text
+    from app.database import engine
+    from app.services import state
+    if state.get_float("images_v2_done"):
+        return
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("UPDATE news_articles SET image_url = REPLACE(image_url, 'width=800&height=500', "
+                              "'width=1200&height=675') WHERE image_url LIKE '%width=800&height=500%'"))
+            conn.execute(text("DELETE FROM article_images"))
+        state.set_float("images_v2_done", 1.0)
+        logger.info("Images v2: switched to 1200x675, images will be regenerated in the background.")
+    except Exception as e:
+        logger.warning(f"Images v2 migration failed: {e}")
+
+
+def _prune_old_images(db):
+    from datetime import datetime, timedelta, timezone
+    cutoff = datetime.now(timezone.utc) - timedelta(days=KEEP_DAYS)
+    try:
+        deleted = db.query(ArticleImage).filter(ArticleImage.created_at < cutoff).delete(synchronize_session=False)
+        if deleted:
+            db.commit()
+            logger.info(f"Pruned {deleted} cover image(s) older than {KEEP_DAYS} days.")
+    except Exception as e:
+        db.rollback()
+        logger.warning(f"Image pruning failed: {e}")
+
+
 async def fill_missing_image():
     """Generate the image for ONE article that doesn't have a stored image yet (newest first)."""
     db = SessionLocal()
     try:
+        _prune_old_images(db)
+        from datetime import datetime, timedelta, timezone
+        recent = datetime.now(timezone.utc) - timedelta(days=KEEP_DAYS)
         stored = select(ArticleImage.slug)
         article = (db.query(NewsArticle)
-                   .filter(NewsArticle.image_url.isnot(None), ~NewsArticle.slug.in_(stored))
+                   .filter(NewsArticle.image_url.isnot(None), ~NewsArticle.slug.in_(stored),
+                           NewsArticle.published_at >= recent)
                    .order_by(NewsArticle.published_at.desc()).first())
         if not article:
             return

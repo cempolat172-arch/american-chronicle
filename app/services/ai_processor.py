@@ -74,7 +74,7 @@ def build_ai_image_url(title: str, slug: str, is_bizarre: bool = False) -> str:
         encoded = urllib.parse.quote(prompt)
         # seed from slug hash ensures same article always gets same image
         seed = abs(hash(slug)) % 999999
-        return f"https://image.pollinations.ai/prompt/{encoded}?width=800&height=500&seed={seed}&nologo=true"
+        return f"https://image.pollinations.ai/prompt/{encoded}?width=1200&height=675&seed={seed}&nologo=true"
     except Exception as e:
         logger.warning(f"Failed to build AI image URL: {e}")
         return f"https://picsum.photos/seed/{slug}/800/500"
@@ -360,7 +360,7 @@ async def process_article_with_ai(raw_news: dict, source: Optional[dict] = None)
             image_prompt_text + ", ultra realistic, 4k, editorial photography, dramatic lighting, no text, no faces, no logos"
         )
         seed = abs(hash(slug_temp)) % 999999
-        image_url = f"https://image.pollinations.ai/prompt/{encoded}?width=800&height=500&seed={seed}&nologo=true"
+        image_url = f"https://image.pollinations.ai/prompt/{encoded}?width=1200&height=675&seed={seed}&nologo=true"
     else:
         image_url = build_ai_image_url(ai_title, slug_temp, is_bizarre)
 
