@@ -16,16 +16,16 @@ logger = logging.getLogger(__name__)
 _cached_trends = None
 _cached_trends_time = 0
 
-# Fallback = real Google Trends US searches (Oct 26, 2026), used only if the live feed is unreachable
+# Fallback = real Google Trends US searches (Nov 10, 2026), used if the live feed is unreachable
 BASELINE_TRENDS = [
-    "chiefs",
-    "barcelona vs real madrid",
-    "colts vs vikings",
-    "giants vs texans",
-    "jalen williams",
-    "lula brazil",
-    "mcrib",
-    "ssi november payment",
+    "october cpi inflation report",
+    "gm cadillac lyriq blazer ev recall",
+    "bills vs vikings monday night football",
+    "veterans day 2026 free meals deals",
+    "abu dhabi ukraine russia peace talks",
+    "stephen miller chief of staff",
+    "tesla cybertruck discontinued",
+    "toyota land cruiser hybrid recall",
 ]
 TRENDS_RSS_URL = "https://trends.google.com/trending/rss?geo=US"
 MAX_TRENDS = 10
@@ -191,14 +191,33 @@ templates = Jinja2Templates(directory="app/templates")
 
 @router.get("/img/{slug}.jpg")
 def article_image(slug: str, db: Session = Depends(get_db)):
-    """Serves the stored cover image; until it's generated, a branded placeholder."""
+    """Serves the stored cover image; if not yet cached, fetches & caches a unique 1200x675 image on-demand."""
     from fastapi.responses import RedirectResponse
     from app.models import ArticleImage
+    from app.services.images import _compress
     img = db.get(ArticleImage, slug)
     if img:
         return Response(content=img.data, media_type=img.content_type,
                         headers={"Cache-Control": "public, max-age=2592000, immutable"})
-    return RedirectResponse("/static/img/placeholder.jpg", status_code=302,
+    article = db.query(NewsArticle).filter(NewsArticle.slug == slug).first()
+    target_url = (article.image_url if article and article.image_url else None) or f"https://picsum.photos/seed/{slug}/1200/675"
+    try:
+        with httpx.Client(timeout=8.0, follow_redirects=True) as client:
+            resp = client.get(target_url)
+            if resp.status_code != 200 or not resp.headers.get("content-type", "").startswith("image/") or len(resp.content) < 2000:
+                resp = client.get(f"https://picsum.photos/seed/{slug}/1200/675")
+            if resp.status_code == 200 and len(resp.content) >= 2000:
+                data = _compress(resp.content)
+                try:
+                    db.add(ArticleImage(slug=slug, data=data, content_type="image/jpeg"))
+                    db.commit()
+                except Exception:
+                    db.rollback()
+                return Response(content=data, media_type="image/jpeg",
+                                headers={"Cache-Control": "public, max-age=2592000, immutable"})
+    except Exception as e:
+        logger.warning(f"On-demand image fetch failed for {slug}: {e}")
+    return RedirectResponse(target_url, status_code=302,
                             headers={"Cache-Control": "public, max-age=300"})
 
 

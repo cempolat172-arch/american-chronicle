@@ -12,7 +12,7 @@ from app.database import SessionLocal
 logger = logging.getLogger(__name__)
 
 # --- Freshness & duplicate-story control -------------------------------------------
-FRESH_HOURS = 6  # only news published in the last 6 hours is processed
+FRESH_HOURS = 24  # news published in the last 24 hours is eligible for processing
 _STOPWORDS = set("""a an the and or of to in on at for with from by as is are was were be been it its
 this that these those after over into amid says said new news vs his her their they he she
 will can could would about how why what who up out off more than not no just""".split())
@@ -213,21 +213,25 @@ async def _run_news_pipeline(force: bool = False) -> dict:
         from app.services.ai_processor import MIN_SOURCE_WORDS
         wanted = max(1, settings.ARTICLES_PER_RUN)
         batch, sources, checked = [], {}, 0
-        # Direct publisher links first (readable), then a few Google News items
+        # Direct publisher links first (readable), then Google News items
         direct = [n for n in new_articles if "news.google.com" not in n.get("link", "")]
         via_google = [n for n in new_articles if "news.google.com" in n.get("link", "")]
-        for candidate in direct[:12] + via_google[:3]:
+        for candidate in direct[:6] + via_google[:4]:
             if len(batch) >= wanted:
                 break
             checked += 1
             src = await fetch_source_article(candidate.get("link", ""))
+            sources[candidate.get("link")] = src
             if len(src.get("text", "").split()) >= MIN_SOURCE_WORDS:
                 batch.append(candidate)
-                sources[candidate.get("link")] = src
         logger.info(f"Readable source found for {len(batch)} of {checked} checked stories.")
-        if not batch and new_articles:
-            # Nothing readable: let the AI research the newest story with Google Search instead
-            batch = new_articles[:1]
+        if len(batch) < wanted and new_articles:
+            # Fill remaining batch slots from newest fresh stories so the pipeline never stalls
+            for n in new_articles:
+                if n not in batch:
+                    batch.append(n)
+                if len(batch) >= wanted:
+                    break
         if batch:
             state.set_float("last_ai_run", time.time())
         logger.info(f"Processing a safe batch of {len(batch)} new articles to avoid Gemini rate limits...")

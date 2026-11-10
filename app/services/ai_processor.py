@@ -85,57 +85,46 @@ MIN_SOURCE_WORDS = 150  # below this, Gemini must research the story with Google
 
 
 def _build_prompt(title: str, summary: str, source_url: str, source_text: str, use_search: bool) -> str:
-    if use_search:
-        source_block = f"""The full article text could not be downloaded. Use Google Search to find and read
-reporting about THIS exact story from reputable outlets before writing.
-Headline: {title}
+    if use_search or not source_text.strip():
+        source_block = f"""Headline: {title}
 Publisher link: {source_url}
-RSS summary: {summary}"""
+RSS Summary: {summary}"""
     else:
         source_block = f"""Headline: {title}
 Publisher link: {source_url}
+RSS Summary: {summary}
 SOURCE ARTICLE TEXT:
 \"\"\"
 {source_text}
 \"\"\""""
 
-    return f"""You are a senior news reporter and SEO editor at The American Chronicle, a US national news site.
-Read the source reporting below and write a completely ORIGINAL news article about the same story.
+    return f"""You are a senior investigative news editor and SEO strategist at The American Chronicle, a high-CTR US national news publication.
+Read the news dispatch below and write a completely ORIGINAL, comprehensive, deeply engaging, SEO-optimized news article (strictly 650 to 1,000 words).
 
-ACCURACY RULES (most important):
-- Use ONLY facts found in the source reporting: names, numbers, dates, places, scores, quotes.
-- Never invent quotes, statistics, experts, sources, reactions, or events. No speculation presented as fact.
-- If something is unknown, do not guess. A shorter accurate article is better than a padded one.
-- You may quote at most two short direct quotes, attributed exactly as in the source.
+ACCURACY & CONTEXT RULES:
+- Anchor the report in the exact real-world event described in the headline, summary, and source text.
+- Never fabricate fake quotes or false scores/numbers. When expanding to 650-1,000 words, add verified institutional, historical, legal, economic, or industry background context, explain why the story matters to American readers, and outline what happens next.
+- Do not copy sentences from the source; rewrite completely in your own authoritative journalistic voice to pass 100% plagiarism checks.
 
-ORIGINALITY RULES:
-- Do not copy sentences or paragraph structure from the source. Rewrite everything in your own words,
-  with your own angle, structure, and headings, so it passes plagiarism checks.
-- Do not mention or name the source outlet's article as "the source"; write as our own reporting.
+SEO & HIGH-CTR RULES:
+1. Do keyword research for this story: choose ONE high-volume focus keyword (the exact phrase Americans are typing into Google right now) and 6-8 secondary / long-tail search keywords.
+2. title: Generate a high-CTR, punchy, magnetic headline (max 85 characters) with the focus keyword near the start. Use varied journalistic prefixes when fitting (e.g. "BREAKING:", "SHOCKWAVE:", "EXCLUSIVE:", "CRISIS:", "ANALYSIS:") or strong active verbs.
+3. content: Markdown article, STRICTLY between 650 and 1,000 words:
+   - Opening lead paragraph: answer who/what/when/where with immediate impact and include the **focus keyword** in bold.
+   - Second paragraph: highlight the top trending search queries around this topic in **bold**.
+   - 4 to 5 engaging `##` (H2) subheadings (and `###` H3 where helpful) containing target search keywords naturally.
+   - A 5-item bulleted list (`* **Bold Point:** ...`) summarizing the key takeaways and facts.
+   - Deep background context, industry/political implications, and what to watch next.
+   - End with a `## Frequently Asked Questions` section: 3 high-intent questions people search on Google, each formatted in **bold** on its own line followed by a clear 2-3 sentence answer.
+   - Never include an H1 (`#`) inside `content`.
+4. seo_description: Punchy 145-158 character meta description containing the focus keyword, optimized for Google Discover CTR.
+5. focus_keyword: the primary focus keyword string.
+6. keywords: array of 6-8 secondary keyword strings.
+7. is_bizarre: true if the story is weird, viral, entertainment, or offbeat; false otherwise.
+8. is_breaking: true if this is an urgent national breaking news development.
+9. image_prompt: max 15 words describing a dramatic, photorealistic editorial scene for this story. No people, faces, text, or logos.
 
-SEO RULES:
-1. Do keyword research for this story: choose ONE focus keyword (the phrase most Americans would type into
-   Google to find this story right now) and 5-8 secondary / long-tail keywords (names, places, "what happened",
-   "when is", "how to" style queries people actually search).
-2. title: a compelling, accurate news headline, max 70 characters, focus keyword near the start.
-   No misleading clickbait. Avoid ALL-CAPS words except short prefixes like "BREAKING:" when truly breaking.
-3. content: Markdown article, 700-1200 words depending on how much real information exists.
-   - First paragraph: answer who/what/when/where in 2-3 sentences and include the focus keyword.
-   - 3-5 H2 (##) subheadings, most containing a keyword naturally; H3 where helpful.
-   - Short paragraphs, a bullet list of key facts, **bold** the most important names/terms (not whole sentences).
-   - Use secondary keywords naturally; never keyword-stuff.
-   - Include background/context ONLY from facts in the source reporting.
-   - End with a "## Frequently Asked Questions" section: 3 questions people search, each answered
-     in 1-3 sentences using only facts from the source. Format each question in **bold** on its own line.
-   - Do not put the headline (H1) inside content.
-4. seo_description: 140-155 characters, includes the focus keyword, makes people want to click.
-5. focus_keyword: the focus keyword string.
-6. keywords: array of 5-8 secondary keyword strings.
-7. is_bizarre: true only if the story is genuinely weird/unusual.
-8. is_breaking: true only for urgent, nationally significant breaking news from the last few hours.
-9. image_prompt: max 15 words describing an editorial photo for the story. No people, faces, text or logos.
-
-Return ONLY raw JSON (no ``` fences) with exactly these keys:
+Return ONLY valid raw JSON (no ``` fences) with exactly these keys:
 "title", "content", "seo_description", "focus_keyword", "keywords", "is_bizarre", "is_breaking", "image_prompt".
 
 {source_block}
@@ -147,9 +136,14 @@ Return ONLY raw JSON (no ``` fences) with exactly these keys:
 # Free tier (Oct 2026): Flash ~20 req/day, Flash-Lite ~500/day each, Gemma ~14k/day.
 # Model names are discovered from the API (ListModels) so new versions are picked up automatically.
 # ---------------------------------------------------------------------------------------------
-PRIMARY_MODEL = GEMINI_MODEL
-SEARCH_MODEL = "gemini-2.5-flash"  # Google Search grounding is only free on Gemini 2.5 models
-FALLBACK_GUESSES = ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-2.5-flash-lite", "gemma-4-31b-it"]
+PRIMARY_MODEL = "gemini-3-flash-preview"
+SEARCH_MODEL = "gemini-3-flash-preview"
+FALLBACK_GUESSES = [
+    "gemini-3-flash-preview",
+    "gemini-3.5-flash-lite",
+    "gemini-flash-lite-latest",
+    "gemma-4-31b-it",
+]
 _models_cache = {"time": 0.0, "names": []}
 _model_cooldowns = {}  # model -> epoch seconds until which it is skipped
 
@@ -234,18 +228,16 @@ def gemini_in_cooldown() -> bool:
     return time.time() < state.get_float("gemini_all_paused_until")
 
 
-async def _call_model(model: str, prompt: str, api_key: str, use_search: bool):
+async def _call_model(model: str, prompt: str, api_key: str, use_search: bool = False):
     """Returns (text, status). status: ok | quota | unavailable | error"""
     import time
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
     payload = {"contents": [{"parts": [{"text": prompt}]}], "generationConfig": {"temperature": 0.7}}
-    if use_search:
-        payload["tools"] = [{"google_search": {}}]
-    elif not model.startswith("gemma"):
+    if not model.startswith("gemma"):
         payload["generationConfig"]["responseMimeType"] = "application/json"
     try:
         # API key goes in a header (not the URL) so it never appears in server logs
-        async with httpx.AsyncClient(timeout=120.0) as http_client:
+        async with httpx.AsyncClient(timeout=90.0) as http_client:
             resp = await http_client.post(url, json=payload, headers={"x-goog-api-key": api_key})
     except Exception as e:
         logger.warning(f"Gemini call failed ({model}): {e}")
@@ -255,8 +247,8 @@ async def _call_model(model: str, prompt: str, api_key: str, use_search: bool):
         _set_cooldown(model, _next_quota_reset() if daily else time.time() + 120,
                       "daily quota used up" if daily else "per-minute limit")
         return None, "quota"
-    if resp.status_code in (400, 403, 404):
-        _set_cooldown(model, time.time() + 6 * 3600, f"unavailable, HTTP {resp.status_code}")
+    if resp.status_code == 404:
+        _set_cooldown(model, time.time() + 3600, f"unavailable, HTTP {resp.status_code}")
         logger.warning(f"{model}: {resp.text[:200]}")
         return None, "unavailable"
     if resp.status_code != 200:
@@ -270,25 +262,22 @@ async def _call_model(model: str, prompt: str, api_key: str, use_search: bool):
         return None, "error"
 
 
-async def _call_gemini(prompt: str, api_key: str, use_search: bool) -> Optional[str]:
+async def _call_gemini(prompt: str, api_key: str, use_search: bool = False) -> Optional[str]:
     import time
     from app.services import state
-    chain = [SEARCH_MODEL] if use_search else await _model_chain(api_key)
+    chain = await _model_chain(api_key)
     for model in chain:
         if time.time() < _cooldown_until(model):
             continue
-        text, status = await _call_model(model, prompt, api_key, use_search)
+        text, status = await _call_model(model, prompt, api_key, False)
         if status == "ok":
             logger.info(f"Article written with {model}.")
             return text
-        if status == "error":
-            return None
-        # quota/unavailable -> try the next model
-    if not use_search:
-        soonest = min((_cooldown_until(m) for m in chain), default=0.0)
-        if soonest > time.time():
-            state.set_float("gemini_all_paused_until", soonest)
-            logger.warning(f"All Gemini models paused until {time.strftime('%H:%M UTC', time.gmtime(soonest))}.")
+        # quota/unavailable/error -> try the next model in the chain
+    soonest = min((_cooldown_until(m) for m in chain), default=0.0)
+    if soonest > time.time():
+        state.set_float("gemini_all_paused_until", soonest)
+        logger.warning(f"All Gemini models paused until {time.strftime('%H:%M UTC', time.gmtime(soonest))}.")
     return None
 
 

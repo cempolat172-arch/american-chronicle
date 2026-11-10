@@ -84,9 +84,14 @@ async def fill_missing_image():
                    .order_by(NewsArticle.published_at.desc()).first())
         if not article:
             return
-        async with httpx.AsyncClient(timeout=90.0, follow_redirects=True) as client:
+        async with httpx.AsyncClient(timeout=45.0, follow_redirects=True) as client:
             resp = await client.get(article.image_url)
-        ctype = resp.headers.get("content-type", "")
+            ctype = resp.headers.get("content-type", "")
+            if resp.status_code != 200 or not ctype.startswith("image/") or len(resp.content) < 2000:
+                fallback_url = f"https://picsum.photos/seed/{article.slug}/1200/675"
+                logger.info(f"Primary image API returned HTTP {resp.status_code} for {article.slug}, fetching fallback.")
+                resp = await client.get(fallback_url)
+                ctype = resp.headers.get("content-type", "")
         if resp.status_code != 200 or not ctype.startswith("image/") or len(resp.content) < 2000:
             logger.info(f"Image not ready for {article.slug} (HTTP {resp.status_code}), will retry.")
             return
