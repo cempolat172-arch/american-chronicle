@@ -170,8 +170,8 @@ async def _run_news_pipeline(force: bool = False) -> dict:
         fresh = [n for n in new_articles if n.get('published') and n['published'] >= cutoff]
         skipped_old = len(new_articles) - len(fresh)
 
-        # Sort by published date descending (newest first) so the site is always fresh
-        fresh.sort(key=lambda x: x['published'], reverse=True)
+        # Sort by (is_trend desc, published desc) so live US Google Trends and newest stories go first
+        fresh.sort(key=lambda x: (bool(x.get('is_trend')), x['published']), reverse=True)
 
         # Titles we already published in the last 36 hours (stored in the DB, so restarts don't matter)
         recent_cutoff = datetime.now(timezone.utc) - timedelta(hours=36)
@@ -213,9 +213,13 @@ async def _run_news_pipeline(force: bool = False) -> dict:
         from app.services.ai_processor import MIN_SOURCE_WORDS
         wanted = max(1, settings.ARTICLES_PER_RUN)
         batch, sources, checked = [], {}, 0
-        # Direct publisher links first (readable), then Google News items
-        direct = [n for n in new_articles if "news.google.com" not in n.get("link", "")]
-        via_google = [n for n in new_articles if "news.google.com" in n.get("link", "")]
+        # Priority: 1) Uncovered live Google Trends (grounded via Gemini Google Search),
+        # 2) Direct publisher links (readable full text), 3) Other Google News items
+        trend_items = [n for n in new_articles if n.get("is_trend")]
+        direct = [n for n in new_articles if not n.get("is_trend") and "news.google.com" not in n.get("link", "")]
+        via_google = [n for n in new_articles if not n.get("is_trend") and "news.google.com" in n.get("link", "")]
+        if trend_items:
+            batch.append(trend_items[0])
         for candidate in direct[:6] + via_google[:4]:
             if len(batch) >= wanted:
                 break

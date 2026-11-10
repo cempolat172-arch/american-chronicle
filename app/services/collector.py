@@ -26,6 +26,12 @@ RSS_FEEDS = [
     # US Sports News (Only last 24 hours)
     "https://news.google.com/rss/search?q=sports+OR+nba+OR+nfl+OR+basketball+OR+football+when:1d&hl=en-US&gl=US&ceid=US:en",
     
+    # Automotive, Trending Cars, EVs & NHTSA Recalls (Only last 24 hours)
+    "https://news.google.com/rss/search?q=car+recall+OR+NHTSA+OR+electric+vehicle+OR+new+SUV+OR+Tesla+OR+Toyota+OR+Ford+OR+GM+when:1d&hl=en-US&gl=US&ceid=US:en",
+
+    # US Economy, Inflation & Consumer Finance (Only last 24 hours)
+    "https://news.google.com/rss/search?q=CPI+inflation+OR+Federal+Reserve+OR+mortgage+rates+OR+US+economy+when:1d&hl=en-US&gl=US&ceid=US:en",
+
     # World News (Dünya Haberleri)
     "https://news.google.com/rss/headlines/section/topic/WORLD?hl=en-US&gl=US&ceid=US:en",
 
@@ -88,25 +94,42 @@ def is_spam_entry(title: str, summary: str) -> bool:
 
 async def collect_news() -> list[dict]:
     """
-    Fetches raw news from predefined RSS feeds asynchronously.
+    Fetches raw news from predefined RSS feeds AND live US Google Trends asynchronously.
     Returns a list of dictionaries containing title, link, summary, and published date.
     Filters out streaming spam and malformed entries.
     """
     raw_news = []
-    
+    import urllib.parse
+
+    # Dynamically build search feeds for today's top live US Google Trends
+    trend_feeds: list[tuple[str, str]] = []
+    try:
+        from app.routers.frontend import get_live_trends
+        live_trends = get_live_trends() or []
+        for term in live_trends[:6]:
+            q = urllib.parse.quote_plus(f"{term} when:1d")
+            trend_feeds.append((term, f"https://news.google.com/rss/search?q={q}&hl=en-US&gl=US&ceid=US:en"))
+    except Exception as e:
+        logger.warning(f"Could not build live Google Trends RSS feeds: {e}")
+
     try:
         async with httpx.AsyncClient() as client:
-            tasks = [fetch_feed(url, client) for url in RSS_FEEDS]
+            all_urls = [url for _, url in trend_feeds] + list(RSS_FEEDS)
+            tasks = [fetch_feed(url, client) for url in all_urls]
             results = await asyncio.gather(*tasks, return_exceptions=True)
 
-            for parsed in results:
+            for idx, parsed in enumerate(results):
+                is_trend_feed = idx < len(trend_feeds)
+                trend_term = trend_feeds[idx][0] if is_trend_feed else None
                 if isinstance(parsed, Exception):
                     logger.error(f"Exception raised during feed fetch: {parsed}")
                     continue
                 if not parsed or not hasattr(parsed, 'entries'):
                     continue
                 
-                for entry in parsed.entries:
+                # Take top 2 stories per live trend feed so we don't flood the queue with one topic
+                entries = parsed.entries[:2] if is_trend_feed else parsed.entries
+                for entry in entries:
                     try:
                         title = entry.get("title", "").strip()
                         summary = entry.get("summary", "").strip()
@@ -136,7 +159,9 @@ async def collect_news() -> list[dict]:
                             "link": entry.get("link", ""),
                             "summary": summary,
                             "published": published_time,
-                            "image_url": image_url
+                            "image_url": image_url,
+                            "is_trend": is_trend_feed,
+                            "trend_term": trend_term,
                         })
                     except Exception as e:
                         logger.error(f"Error parsing entry {entry.get('link', 'unknown')}: {e}")

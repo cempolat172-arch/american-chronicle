@@ -284,102 +284,28 @@
         <section class="border-t-4 border-black pt-8 pb-10 mt-12 bg-gray-50 p-6 md:p-10 border-b-4 border-double">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 border-b border-gray-300 pb-4">
                 <div>
-                    <span class="text-xs font-sans font-bold uppercase tracking-widest text-red-700 block mb-1">Live Search Intelligence • November 10, 2026</span>
-                    <h2 class="text-2xl md:text-3xl font-black uppercase tracking-widest text-gray-900">Google Trends Radar: What America Is Searching Tonight</h2>
+                    <span class="text-xs font-sans font-bold uppercase tracking-widest text-red-700 block mb-1">Live Search Intelligence • Updated Hourly</span>
+                    <h2 class="text-2xl md:text-3xl font-black uppercase tracking-widest text-gray-900">Google Trends Radar: What America Is Searching Right Now</h2>
                 </div>
                 <p class="text-xs font-sans text-gray-600 mt-2 md:mt-0">Deep-dive original reporting on today's highest-velocity U.S. search queries</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Card 1: October CPI Report -->
+                {% for item in (articles[:6] if articles else []) %}
                 <article class="bg-white border-2 border-black p-5 flex flex-col justify-between">
                     <div>
                         <div class="flex justify-between items-center text-[10px] font-sans font-bold uppercase tracking-widest mb-2">
-                            <span class="text-red-700">Economy & Fed • #1 US Trend</span>
-                            <span class="bg-black text-white px-2 py-0.5">500K+ Searches</span>
+                            <span class="text-red-700">{{ (item.keywords.split(',')[0] if item.keywords else 'U.S. Trend Report') | truncate(32, True, '') }}</span>
+                            <span class="bg-black text-white px-2 py-0.5">{{ item.published_at.strftime('%b %d') if item.published_at else 'Trending' }}</span>
                         </div>
                         <h3 class="text-lg font-bold text-gray-900 mb-2 leading-snug">
-                            <a href="/article/october-cpi-shockwave-us-inflation-rises-0-4-federal-reserve-rate-cut-2026" class="hover:underline">October CPI Shockwave: U.S. Inflation Rises 0.4% as Shelter and Auto Insurance Costs Cloud December Fed Rate Cut</a>
+                            <a href="/article/{{ item.slug }}" class="hover:underline">{{ item.title }}</a>
                         </h3>
-                        <p class="text-xs text-gray-600 leading-relaxed mb-4">Core inflation holds at 3.3% year-over-year as housing and motor vehicle insurance surge, forcing Wall Street to reprice December FOMC odds.</p>
+                        <p class="text-xs text-gray-600 leading-relaxed mb-4">{{ item.seo_description }}</p>
                     </div>
-                    <a href="/article/october-cpi-shockwave-us-inflation-rises-0-4-federal-reserve-rate-cut-2026" class="text-[11px] font-sans font-bold uppercase tracking-widest text-red-700 hover:underline">Read Full Analysis &rarr;</a>
+                    <a href="/article/{{ item.slug }}" class="text-[11px] font-sans font-bold uppercase tracking-widest text-red-700 hover:underline">Read Full Analysis &rarr;</a>
                 </article>
-
-                <!-- Card 2: GM & Toyota EV / SUV Recall -->
-                <article class="bg-white border-2 border-black p-5 flex flex-col justify-between">
-                    <div>
-                        <div class="flex justify-between items-center text-[10px] font-sans font-bold uppercase tracking-widest mb-2">
-                            <span class="text-red-700">Automotive & EVs • Trending Car</span>
-                            <span class="bg-black text-white px-2 py-0.5">250K+ Searches</span>
-                        </div>
-                        <h3 class="text-lg font-bold text-gray-900 mb-2 leading-snug">
-                            <a href="/article/auto-recall-crisis-gm-toyota-recall-173000-cadillac-lyriq-chevy-blazer-ev-land-cruiser-2026" class="hover:underline">Auto Recall Crisis: GM and Toyota Recall Over 173,000 Cadillac Lyriq, Chevy Blazer EV, and Land Cruiser Models</a>
-                        </h3>
-                        <p class="text-xs text-gray-600 leading-relaxed mb-4">NHTSA safety bulletins target Ultium EV rear parking brake wiring harnesses and 10-speed transmission software in 2025–2026 SUVs.</p>
-                    </div>
-                    <a href="/article/auto-recall-crisis-gm-toyota-recall-173000-cadillac-lyriq-chevy-blazer-ev-land-cruiser-2026" class="text-[11px] font-sans font-bold uppercase tracking-widest text-red-700 hover:underline">Check Affected Models &rarr;</a>
-                </article>
-
-                <!-- Card 3: Bills vs Vikings MNF -->
-                <article class="bg-white border-2 border-black p-5 flex flex-col justify-between">
-                    <div>
-                        <div class="flex justify-between items-center text-[10px] font-sans font-bold uppercase tracking-widest mb-2">
-                            <span class="text-red-700">NFL Week 10 • Sports</span>
-                            <span class="bg-black text-white px-2 py-0.5">1M+ Searches</span>
-                        </div>
-                        <h3 class="text-lg font-bold text-gray-900 mb-2 leading-snug">
-                            <a href="/article/monday-night-dominance-josh-allen-james-cook-power-buffalo-bills-past-minnesota-vikings-23-6" class="hover:underline">Monday Night Dominance: Josh Allen and James Cook Power Buffalo Bills Past Minnesota Vikings 23-6</a>
-                        </h3>
-                        <p class="text-xs text-gray-600 leading-relaxed mb-4">Buffalo's pass rush records five sacks and two red-zone takeaways at Highmark Stadium to tighten the AFC East race.</p>
-                    </div>
-                    <a href="/article/monday-night-dominance-josh-allen-james-cook-power-buffalo-bills-past-minnesota-vikings-23-6" class="text-[11px] font-sans font-bold uppercase tracking-widest text-red-700 hover:underline">Read Game Recap &rarr;</a>
-                </article>
-
-                <!-- Card 4: Veterans Day 2026 Guide -->
-                <article class="bg-white border-2 border-black p-5 flex flex-col justify-between">
-                    <div>
-                        <div class="flex justify-between items-center text-[10px] font-sans font-bold uppercase tracking-widest mb-2">
-                            <span class="text-red-700">National Holiday • Consumer Guide</span>
-                            <span class="bg-black text-white px-2 py-0.5">500K+ Searches</span>
-                        </div>
-                        <h3 class="text-lg font-bold text-gray-900 mb-2 leading-snug">
-                            <a href="/article/veterans-day-2026-complete-guide-free-meals-restaurant-deals-open-closed-november-11" class="hover:underline">Veterans Day 2026 Complete Guide: Every Verified Free Meal, Restaurant Deal, and What Is Open or Closed</a>
-                        </h3>
-                        <p class="text-xs text-gray-600 leading-relaxed mb-4">Full schedule for banks, USPS, NYSE/Nasdaq, and verified complimentary meals for military veterans and active-duty troops.</p>
-                    </div>
-                    <a href="/article/veterans-day-2026-complete-guide-free-meals-restaurant-deals-open-closed-november-11" class="text-[11px] font-sans font-bold uppercase tracking-widest text-red-700 hover:underline">See Full Deals List &rarr;</a>
-                </article>
-
-                <!-- Card 5: Abu Dhabi Peace Summit -->
-                <article class="bg-white border-2 border-black p-5 flex flex-col justify-between">
-                    <div>
-                        <div class="flex justify-between items-center text-[10px] font-sans font-bold uppercase tracking-widest mb-2">
-                            <span class="text-red-700">World & Diplomacy • Breaking</span>
-                            <span class="bg-black text-white px-2 py-0.5">200K+ Searches</span>
-                        </div>
-                        <h3 class="text-lg font-bold text-gray-900 mb-2 leading-snug">
-                            <a href="/article/abu-dhabi-peace-summit-trilateral-talks-us-ukraine-russia-security-guarantees-2026" class="hover:underline">Abu Dhabi Peace Summit: Inside the High-Stakes Trilateral Talks Between the U.S., Ukraine, and Russia</a>
-                        </h3>
-                        <p class="text-xs text-gray-600 leading-relaxed mb-4">Envoys debate demilitarized buffer corridors, Black Sea shipping lanes, and bilateral defense guarantees in the UAE capital.</p>
-                    </div>
-                    <a href="/article/abu-dhabi-peace-summit-trilateral-talks-us-ukraine-russia-security-guarantees-2026" class="text-[11px] font-sans font-bold uppercase tracking-widest text-red-700 hover:underline">Read Diplomatic Briefing &rarr;</a>
-                </article>
-
-                <!-- Card 6: Capitol Hill Lame-Duck Showdown -->
-                <article class="bg-white border-2 border-black p-5 flex flex-col justify-between">
-                    <div>
-                        <div class="flex justify-between items-center text-[10px] font-sans font-bold uppercase tracking-widest mb-2">
-                            <span class="text-red-700">Washington • Congress</span>
-                            <span class="bg-black text-white px-2 py-0.5">300K+ Searches</span>
-                        </div>
-                        <h3 class="text-lg font-bold text-gray-900 mb-2 leading-snug">
-                            <a href="/article/capitol-hill-showdown-trump-rejects-immigration-amnesty-stephen-miller-lame-duck-blitz-2026" class="hover:underline">Capitol Hill Showdown: Trump Rejects Immigration Amnesty as Stephen Miller Leads Lame-Duck Blitz</a>
-                        </h3>
-                        <p class="text-xs text-gray-600 leading-relaxed mb-4">Lawmakers return to Washington facing a December 18 government funding deadline and fierce battles over border enforcement.</p>
-                    </div>
-                    <a href="/article/capitol-hill-showdown-trump-rejects-immigration-amnesty-stephen-miller-lame-duck-blitz-2026" class="text-[11px] font-sans font-bold uppercase tracking-widest text-red-700 hover:underline">Read Capitol Report &rarr;</a>
-                </article>
+                {% endfor %}
             </div>
 
             {% set covered = trend_links | selectattr("has_article") | list if trend_links else [] %}
