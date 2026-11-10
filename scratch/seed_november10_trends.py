@@ -336,6 +336,102 @@ Stephen Miller officially took over as White House Chief of Staff on Monday, Nov
 
 **What is on the agenda for the 2026 lame-duck session of Congress?**
 Congress must pass government funding legislation to avoid a December shutdown, finalize the National Defense Authorization Act (NDAA), and vote on pending federal judicial nominations before the new Congress is sworn in this January."""
+    },
+    {
+        "title": "NHTSA MEGA-PROBE: 1.2 Million Ford Explorer SUVs Investigated Over Airbag Burns as Honda Recalls 635,000 Vehicles for Steering Failure",
+        "slug": "nhtsa-probe-1-2-million-ford-explorer-suvs-airbag-burns-honda-recalls-635000-steering-2026",
+        "seo_description": "Federal regulators open a safety probe into 1.2 million 2021-2026 Ford Explorer SUVs over unexpected side airbag deployments while Honda recalls 635,808 cars for electric power steering software flaws.",
+        "keywords": "Ford Explorer NHTSA investigation 2026, Honda steering recall 635000 vehicles, 2021-2026 Ford Explorer airbag recall, Police Interceptor Utility airbag burn, Honda $3 billion Ohio hybrid plant, Toyota C-HR EV stall recall, NHTSA VIN lookup",
+        "is_bizarre": 0,
+        "is_breaking": 1,
+        "image_prompt": "Modern American SUV fleet inside a bright automotive safety testing laboratory with diagnostic sensors and highway test track in background, wide editorial angle",
+        "content": """Federal auto safety regulators escalated oversight across the American automotive sector on Tuesday as the **National Highway Traffic Safety Administration (NHTSA)** opened a formal investigation into more than **1.2 million Ford Explorer SUVs** over inadvertent side-airbag deployments, while **Honda** announced a nationwide recall of **635,808 vehicles** due to an **electric power steering (EPS)** software defect. Alongside the safety actions, Honda also unveiled a landmark **$3 billion Central Ohio hybrid manufacturing investment**, underscoring a rapid industry pivot toward hybrid powertrains in late 2026.
+
+The wave of federal vehicle safety bulletins sparked a massive surge in U.S. Google searches on Tuesday evening for **Ford Explorer NHTSA investigation 2026**, **Honda steering recall 635,000 vehicles**, **2021–2026 Ford Explorer airbag recall**, and **Honda $3 billion Ohio hybrid plant**.
+
+## Why NHTSA Is Investigating 1.2 Million Ford Explorer and Police Interceptor SUVs
+
+According to documents filed by NHTSA's **Office of Defects Investigation (ODI)**, the preliminary evaluation covers **1,214,000 model-year 2021 through 2026 Ford Explorer** retail SUVs as well as **Ford Police Interceptor Utility** cruisers operated by state and municipal law enforcement agencies nationwide.
+
+Safety investigators opened the probe after receiving multiple field incident reports alleging that **seat-mounted side torso airbags** deployed unexpectedly without a collision—in several cases while vehicles were parked, idling, or traveling over minor road imperfections. Because airbag inflators discharge high-temperature gases within milliseconds, several occupants and law enforcement officers reported sustaining severe **second- and third-degree thermal and chemical burns** to their arms, necks, and upper torsos.
+
+Key details from Tuesday's federal automotive safety actions and industry announcements include:
+* **1.2 Million Ford Explorers Under Review:** Covers model years **2021–2026 Ford Explorer** and **Police Interceptor Utility** SUVs equipped with front seat-mounted side airbag modules.
+* **Wiring Harness Chafing Suspected:** Preliminary engineering reviews suggest that repeated seat adjustments and heavy duty-belt wear in police cruisers may chafe seat wiring harnesses, creating an electrical short that triggers the airbag squib.
+* **635,808 Honda Vehicles Recalled in the U.S.:** Affects popular late-model Honda sedans, crossovers, and hybrids whose **Electric Power Steering (EPS)** control unit software can misread torque sensor signals and abruptly disable power steering assist while driving.
+* **Toyota 2026 C-HR Electric SUV Recall:** Separately, Toyota issued a safety recall for **8,521 model-year 2026 C-HR electric SUVs** over an inverter software fault that can cause a sudden loss of motive power at highway speeds.
+* **Honda's $3 Billion Central Ohio Hybrid Plant:** Capitalizing on hybrid vehicles reaching 30 percent of its U.S. sales mix, Honda committed **$3 billion** to build a flexible Central Ohio assembly complex capable of producing **240,000 hybrid and electric vehicles annually**.
+
+## Inside the Honda 635,808-Vehicle Electric Power Steering Recall
+
+Honda's recall filing with NHTSA warns that an internal software logic error inside the **electric power steering electronic control unit (ECU)** can falsely trigger a fail-safe shutdown when driving over uneven pavement or executing rapid steering maneuvers. When the EPS assist cuts out, the driver is left with heavy manual steering—particularly dangerous at low speeds in intersections or during emergency lane-change maneuvers—accompanied by an amber steering wheel warning light on the digital instrument cluster.
+
+Authorized Honda dealerships will reprogram the EPS control module with updated fault-tolerance software free of charge. Owner notification letters are scheduled to begin mailing in December, and drivers can verify whether their specific vehicle is included immediately by entering their **17-digit Vehicle Identification Number (VIN)** at **NHTSA.gov/recalls**.
+
+### How Hybrid Demand Inspired Honda's $3 Billion Ohio Manufacturing Bet
+
+While battery-electric vehicle (BEV) adoption has faced charging infrastructure bottlenecks and high financing rates across North America in 2026, consumer demand for **gas-electric hybrid SUVs and sedans** has reached an all-time high. Honda executives noted Tuesday that hybrids now account for roughly one-third of the automaker's total U.S. showroom volume, prompting the **$3 billion Central Ohio plant expansion** designed to switch seamlessly between hybrid-electric and full battery-electric architectures on the same assembly line.
+
+## What Ford Explorer and Honda Owners Should Do Right Now
+
+Ford stated Tuesday that its engineering teams are cooperating fully with NHTSA investigators to identify the root cause of the inadvertent side-airbag deployments. Until a formal recall remedy is issued, fleet managers and Explorer owners who observe an illuminated **airbag readiness warning light** on their dashboard are advised to have the vehicle inspected immediately at a certified Ford service center and avoid placing objects or aftermarket seat covers over the outer bolsters of the front seats.
+
+## Frequently Asked Questions
+
+**Which Ford Explorer models are included in the November 2026 NHTSA airbag investigation?**
+The NHTSA investigation covers approximately 1.2 million model-year 2021 through 2026 Ford Explorer SUVs and Ford Police Interceptor Utility vehicles across the United States.
+
+**Why did Honda recall 635,808 vehicles in November 2026?**
+Honda recalled 635,808 U.S. vehicles because a software error in the electric power steering (EPS) control module can unexpectedly disable power steering assistance while driving, increasing the risk of a crash.
+
+**How can I check if my Ford Explorer or Honda is affected by a safety recall?**
+Locate your 17-digit Vehicle Identification Number (VIN) on your registration card or lower driver-side windshield and enter it at NHTSA.gov/recalls for free real-time recall status."""
+    },
+    {
+        "title": "WAR POWERS CLASH: Rep. Thomas Massie Introduces Articles of Impeachment Against Defense Secretary Pete Hegseth as Trump Signals Iran De-Escalation",
+        "slug": "war-powers-clash-thomas-massie-impeachment-articles-pete-hegseth-trump-iran-deescalation-2026",
+        "seo_description": "Republican Rep. Thomas Massie introduces articles of impeachment on the House floor against Defense Secretary Pete Hegseth over the 1973 War Powers Resolution as President Trump calls new Iran strikes unlikely.",
+        "keywords": "Thomas Massie Pete Hegseth impeachment, 1973 War Powers Resolution Congress, Defense Secretary Pete Hegseth House vote, Trump Iran de-escalation Qatar Saudi talks, unauthorized military operations Yemen Iran, Capitol Hill foreign policy 2026",
+        "is_bizarre": 0,
+        "is_breaking": 1,
+        "image_prompt": "The Pentagon building at dusk with American flag in foreground and Capitol dome visible in the distance, dramatic editorial lighting",
+        "content": """A rare constitutional confrontation erupted on Capitol Hill on Tuesday as Kentucky Republican Representative **Thomas Massie** formally introduced **articles of impeachment** on the House floor against **Defense Secretary Pete Hegseth**, accusing the Pentagon chief of violating the **1973 War Powers Resolution** by directing unauthorized military operations in the Middle East without explicit congressional approval. The dramatic legislative maneuver came on the same afternoon that **President Donald Trump** told reporters a major new military campaign against **Iran** is now **"quite unlikely"** following back-channel diplomatic talks mediated by **Qatar and Saudi Arabia**.
+
+The dual developments in Washington triggered hundreds of thousands of searches across the United States on Tuesday evening for **Thomas Massie Pete Hegseth impeachment**, **1973 War Powers Resolution Congress**, **Defense Secretary Pete Hegseth House vote**, and **Trump Iran de-escalation talks**.
+
+## Why Rep. Thomas Massie Filed Articles of Impeachment Against Pete Hegseth
+
+Rising on the floor of the House of Representatives as lawmakers returned for the post-election lame-duck session, **Rep. Thomas Massie (R-KY)**—a longtime constitutional conservative and vocal critic of unauthorized foreign military interventions—introduced a resolution charging **Defense Secretary Pete Hegseth** with high crimes and misdemeanors under Article II, Section 4 of the U.S. Constitution.
+
+The impeachment resolution centers on the constitutional mandate under **Article I, Section 8**, which vests the sole power to declare war in the United States Congress, alongside statutory reporting and authorization limits established by the **War Powers Resolution of 1973**. Massie's filing alleges that the Department of Defense carried out sustained offensive naval and aerial operations involving **Yemen and Iranian-aligned maritime targets** beyond statutory time limits without securing an Authorization for Use of Military Force (AUMF) from lawmakers.
+
+Key developments from Tuesday's Pentagon and Capitol Hill clash include:
+* **Constitutional War Powers Challenge:** Rep. Massie's resolution accuses Pentagon leadership of bypassing Congress to conduct offensive regional strikes without a formal declaration of war or updated AUMF.
+* **Pentagon Dismisses Impeachment Push:** Spokespeople for **Secretary Hegseth** rejected the resolution Tuesday afternoon, characterizing the effort as a political stunt rooted in long-standing **"policy disagreements"** over Middle East deterrence.
+* **Trump Signals Diplomatic De-Escalation with Iran:** Speaking at the White House, **President Trump** stated that renewed large-scale military action against Iran **"doesn't seem to be necessary"** and is **"quite unlikely"** after Gulf mediators in Doha and Riyadh helped broker a de-escalation framework.
+* **Federal Judge Halts Arizona Deportation Flight:** In a separate legal twist involving Iranian nationals, a federal district judge in Arizona issued an emergency order Tuesday halting a scheduled deportation flight out of **Mesa, Arizona**, pending individual due-process reviews.
+* **House Committee Referral Expected:** House Republican leadership indicated that Massie's resolution will be referred to the **House Judiciary Committee** rather than brought to an immediate privileged floor vote during the lame-duck session.
+
+## How the 1973 War Powers Resolution Sparked a Bipartisan Debate
+
+Enacted over President Richard Nixon's veto in 1973, the **War Powers Resolution** requires the executive branch to notify Congress within **48 hours** of introducing U.S. armed forces into hostilities and mandates the withdrawal of forces within **60 to 90 days** unless Congress passes a formal authorization or extends the deadline. For decades, lawmakers from both the libertarian wing of the Republican Party and the progressive wing of the Democratic Party have argued that successive administrations have stretched self-defense exceptions far beyond the statute's intent.
+
+While House GOP leaders quickly moved to shield **Pete Hegseth** from a snap floor vote on Tuesday, several anti-interventionist lawmakers in both chambers praised Massie for forcing a debate over congressional war powers before the **120th Congress** convenes in January 2027.
+
+### Trump Pivots Toward Gulf-Mediated Diplomacy on Iran
+
+Massie's floor challenge coincided with a notable shift in tone from the Oval Office regarding Tehran. Following weeks of heightened maritime tension in the Persian Gulf and Red Sea, **President Trump** credited diplomatic outreach facilitated by **Qatar and Saudi Arabia** for reducing the likelihood of direct military escalation. Energy markets responded immediately to the president's remarks, helping keep global crude oil benchmarks below **$72 per barrel** despite ongoing geopolitical negotiations in Abu Dhabi and the Middle East.
+
+## Frequently Asked Questions
+
+**Why did Rep. Thomas Massie introduce articles of impeachment against Pete Hegseth?**
+Rep. Thomas Massie (R-KY) introduced impeachment articles accusing Defense Secretary Pete Hegseth of violating the 1973 War Powers Resolution and the U.S. Constitution by conducting military operations involving Yemen and Iran without congressional authorization.
+
+**How did Defense Secretary Pete Hegseth respond to the impeachment resolution?**
+Hegseth and Pentagon officials dismissed the impeachment articles as baseless, stating that all U.S. defensive operations complied with federal law and characterizing Massie's move as a policy disagreement.
+
+**What did President Trump say about military action against Iran on November 10, 2026?**
+President Trump stated that a major military campaign against Iran is "quite unlikely" and appears unnecessary following productive diplomatic talks facilitated by Qatar and Saudi Arabia."""
     }
 ]
 
@@ -348,7 +444,7 @@ def build_image_url(prompt: str, seed: int) -> str:
 def seed_database():
     conn = sqlite3.connect("news.db")
     cur = conn.cursor()
-    published = "2026-11-10 15:30:00"  # UTC (18:30 Istanbul)
+    published = "2026-11-10 17:00:00"  # UTC (20:00 Istanbul)
     for i, a in enumerate(ARTICLES):
         wc = len(a["content"].split())
         assert 700 <= wc <= 1100, f"{a['slug']}: word count {wc} outside 700-1100!"
