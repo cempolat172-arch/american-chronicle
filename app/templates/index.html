@@ -111,6 +111,47 @@
         @media (min-width: 1024px) {
             .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
         }
+        #notif-banner {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            left: 1rem;
+            z-index: 9999;
+            background: #ffffff;
+            border: 4px solid #000000;
+            padding: 1rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+            transition: transform 0.4s ease, opacity 0.4s ease;
+        }
+        @media (min-width: 768px) {
+            #notif-banner {
+                left: auto;
+                width: 24rem;
+            }
+        }
+        #notif-banner.notif-hidden {
+            transform: translateY(150%);
+            opacity: 0;
+            pointer-events: none;
+        }
+        #notif-allow {
+            background-color: #b91c1c;
+            color: #ffffff;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        #notif-allow:hover {
+            background-color: #dc2626;
+        }
+        #notif-dismiss {
+            background-color: #e5e7eb;
+            color: #000000;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        #notif-dismiss:hover {
+            background-color: #d1d5db;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-gray-300">
@@ -366,123 +407,101 @@
                 console.error("Error submitting reaction:", error);
             }
         }
-
-        // Notification Logic for Breaking News
-        document.addEventListener('DOMContentLoaded', () => {
-            if ("Notification" in window) {
-                // Request permission quietly on load if not determined
-                if (Notification.permission === "default") {
-                    Notification.requestPermission();
-                }
-
-                // Poll for new breaking news every 30 seconds
-                setInterval(async () => {
-                    if (Notification.permission !== "granted") return;
-                    
-                    try {
-                        const response = await fetch('/api/latest-breaking');
-                        const data = await response.json();
-                        
-                        if (data.id && data.id > 0) {
-                            const lastId = localStorage.getItem('lastBreakingNewsId');
-                            if (!lastId || data.id > parseInt(lastId)) {
-                                // We have a new breaking news!
-                                const notification = new Notification("🚨 BREAKING NEWS", {
-                                    body: data.title,
-                                    icon: "https://cdn-icons-png.flaticon.com/512/882/882725.png"
-                                });
-                                
-                                notification.onclick = function() {
-                                    window.open(`/article/${data.slug}`, '_blank');
-                                };
-                                
-                                // Save to prevent duplicate notifications
-                                localStorage.setItem('lastBreakingNewsId', data.id);
-                            }
-                        }
-                    } catch (error) {
-                        console.error("Error checking breaking news:", error);
-                    }
-                }, 30000); // 30 seconds
-            }
-        });
     </script>
     <script id="dsq-count-scr" src="//theuschronicle.disqus.com/count.js" async></script>
 
-    
-    
     <!-- Push Notifications Logic -->
-    <div id="notif-banner" class="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 bg-white border-4 border-black p-4 shadow-2xl z-50 transform translate-y-[150%] transition-transform duration-500">
-        <h3 class="font-black uppercase tracking-widest text-lg mb-1">Breaking News Alerts</h3>
-        <p class="text-xs font-sans text-gray-600 mb-4">Never miss a major global event. Allow browser notifications to get live updates.</p>
+    <div id="notif-banner" class="notif-hidden">
+        <h3 id="notif-title" class="font-black uppercase tracking-widest text-lg mb-1">Breaking News Alerts</h3>
+        <p id="notif-desc" class="text-xs font-sans text-gray-600 mb-4">Never miss a major global event. Allow browser notifications to get live updates.</p>
         <div class="flex gap-2">
-            <button id="notif-allow" class="flex-1 bg-red-700 text-white text-xs font-bold uppercase tracking-widest py-2 hover:bg-red-600">Enable</button>
-            <button id="notif-dismiss" class="flex-1 bg-gray-200 text-black text-xs font-bold uppercase tracking-widest py-2 hover:bg-gray-300">Not Now</button>
+            <button type="button" id="notif-allow" class="flex-1 text-xs font-bold uppercase tracking-widest py-2">Enable</button>
+            <button type="button" id="notif-dismiss" class="flex-1 text-xs font-bold uppercase tracking-widest py-2">Not Now</button>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const banner = document.getElementById('notif-banner');
-            
-            // Check if browser supports notifications
-            if (!("Notification" in window)) {
-                console.log("This browser does not support desktop notification");
-                return;
-            }
-            
-            // Check if user already made a choice or natively granted/denied
-            if (window.Notification.permission === 'default' && !localStorage.getItem('notif_dismissed')) {
-                setTimeout(() => {
-                    banner.classList.remove('translate-y-[150%]');
-                }, 3000);
-            }
+            const allowBtn = document.getElementById('notif-allow');
+            const dismissBtn = document.getElementById('notif-dismiss');
+            const titleEl = document.getElementById('notif-title');
+            const descEl = document.getElementById('notif-desc');
+            let pollerStarted = false;
 
-            document.getElementById('notif-dismiss').addEventListener('click', () => {
-                localStorage.setItem('notif_dismissed', 'true');
-                banner.classList.add('translate-y-[150%]');
-            });
+            const alreadyEnabled = localStorage.getItem('notif_enabled') === 'true' ||
+                ("Notification" in window && window.Notification.permission === 'granted');
+            const alreadyDismissed = localStorage.getItem('notif_dismissed') === 'true';
 
-            document.getElementById('notif-allow').addEventListener('click', () => {
-                banner.classList.add('translate-y-[150%]');
-                try {
-                    let handled = false;
-                    const handlePermission = (permission) => {
-                        if (handled) return;
-                        handled = true;
-                        if (permission === 'granted') {
-                            startNotificationPoller();
-                        } else {
-                            console.log("Permission denied or dismissed:", permission);
-                        }
-                    };
-                    
-                    const promise = window.Notification.requestPermission(handlePermission);
-                    if (promise !== undefined) {
-                        promise.then(handlePermission).catch(e => console.error(e));
-                    }
-                } catch (e) {
-                    console.error("Notification permission error:", e);
-                }
-            });
-
-            if (window.Notification.permission === 'granted') {
+            if (alreadyEnabled) {
                 startNotificationPoller();
+            } else if (!alreadyDismissed) {
+                setTimeout(() => {
+                    banner.classList.remove('notif-hidden');
+                }, 2000);
+            }
+
+            dismissBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                localStorage.setItem('notif_dismissed', 'true');
+                banner.classList.add('notif-hidden');
+            });
+
+            allowBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                localStorage.setItem('notif_enabled', 'true');
+                localStorage.removeItem('notif_dismissed');
+                allowBtn.textContent = '✓ Enabled';
+                allowBtn.style.backgroundColor = '#15803d';
+                titleEl.textContent = 'Alerts Activated';
+                descEl.textContent = 'You are now subscribed to live breaking news alerts from The American Chronicle.';
+
+                if ("Notification" in window) {
+                    try {
+                        if (window.Notification.permission === 'default') {
+                            const result = window.Notification.requestPermission();
+                            if (result && typeof result.then === 'function') {
+                                const perm = await result;
+                                if (perm === 'granted') {
+                                    sendWelcomeNotification();
+                                }
+                            }
+                        } else if (window.Notification.permission === 'granted') {
+                            sendWelcomeNotification();
+                        }
+                    } catch (err) {
+                        console.error("Notification permission error:", err);
+                    }
+                }
+
+                startNotificationPoller();
+                setTimeout(() => {
+                    banner.classList.add('notif-hidden');
+                }, 1200);
+            });
+
+            function sendWelcomeNotification() {
+                try {
+                    const n = new window.Notification("The American Chronicle", {
+                        body: "Breaking News Alerts are now active. You will be notified as major stories break.",
+                        icon: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"%3E%3Crect width="64" height="64" rx="14" fill="%23b91c1c"/%3E%3Ctext x="50%25" y="54%25" font-family="Georgia" font-size="34" font-weight="bold" fill="%23ffffff" text-anchor="middle" dominant-baseline="middle"%3EUS%3C/text%3E%3C/svg%3E'
+                    });
+                    setTimeout(() => n.close(), 5000);
+                } catch (e) {}
             }
 
             function startNotificationPoller() {
-                // Initial fetch to set the baseline ID without alerting
+                if (pollerStarted) return;
+                pollerStarted = true;
+
                 fetch('/api/latest-breaking')
                     .then(res => res.json())
                     .then(data => {
-                        if (data && data.id) {
-                            if (!localStorage.getItem('last_notif_id')) {
-                                localStorage.setItem('last_notif_id', data.id);
-                            }
+                        if (data && data.id && !localStorage.getItem('last_notif_id')) {
+                            localStorage.setItem('last_notif_id', data.id);
                         }
                     }).catch(err => console.error(err));
 
-                // Poll every 60 seconds
                 setInterval(() => {
                     fetch('/api/latest-breaking')
                         .then(res => res.json())
@@ -495,23 +514,32 @@
                                 }
                             }
                         }).catch(err => console.error(err));
-                }, 60000);
+                }, 45000);
             }
 
             function showNotification(title, slug) {
-                try {
-                    const notif = new window.Notification("🚨 BREAKING NEWS", {
-                        body: title,
-                        icon: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"%3E%3Crect width="64" height="64" rx="14" fill="%23b91c1c"/%3E%3Ctext x="50%25" y="54%25" font-family="Georgia" font-size="34" font-weight="bold" fill="%23ffffff" text-anchor="middle" dominant-baseline="middle"%3EUS%3C/text%3E%3C/svg%3E',
-                        requireInteraction: true
-                    });
-                    notif.onclick = function() {
-                        window.open('/article/' + slug, '_blank');
-                        notif.close();
-                    };
-                } catch(e) {
-                    console.error("Error showing notification:", e);
+                if ("Notification" in window && window.Notification.permission === 'granted') {
+                    try {
+                        const notif = new window.Notification("🚨 BREAKING NEWS", {
+                            body: title,
+                            icon: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"%3E%3Crect width="64" height="64" rx="14" fill="%23b91c1c"/%3E%3Ctext x="50%25" y="54%25" font-family="Georgia" font-size="34" font-weight="bold" fill="%23ffffff" text-anchor="middle" dominant-baseline="middle"%3EUS%3C/text%3E%3C/svg%3E',
+                            requireInteraction: true
+                        });
+                        notif.onclick = function() {
+                            window.open('/article/' + slug, '_blank');
+                            notif.close();
+                        };
+                        return;
+                    } catch (e) {
+                        console.error("Error showing notification:", e);
+                    }
                 }
+                // In-page breaking toast fallback
+                titleEl.textContent = '🚨 Breaking News';
+                descEl.innerHTML = `<a href="/article/${slug}" class="font-bold underline text-black">${title}</a>`;
+                allowBtn.textContent = 'Read Story';
+                allowBtn.onclick = () => { window.location.href = '/article/' + slug; };
+                banner.classList.remove('notif-hidden');
             }
         });
     </script>
