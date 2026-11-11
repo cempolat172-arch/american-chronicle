@@ -16,16 +16,16 @@ logger = logging.getLogger(__name__)
 _cached_trends = None
 _cached_trends_time = 0
 
-# Fallback = real Google Trends US searches (Nov 10, 2026), used if the live feed is unreachable
+# Fallback = real Google Trends US searches (Nov 11, 2026), used if the live feed is unreachable
 BASELINE_TRENDS = [
+    "veterans day 2026 free meals deals",
+    "nyc veterans day parade suni williams",
+    "ford explorer nhtsa airbag recall",
+    "honda steering recall 635000 vehicles",
+    "thomas massie pete hegseth impeachment",
     "october cpi inflation report",
     "gm cadillac lyriq blazer ev recall",
-    "bills vs vikings monday night football",
-    "veterans day 2026 free meals deals",
     "abu dhabi ukraine russia peace talks",
-    "stephen miller chief of staff",
-    "tesla cybertruck discontinued",
-    "toyota land cruiser hybrid recall",
 ]
 TRENDS_RSS_URL = "https://trends.google.com/trending/rss?geo=US"
 MAX_TRENDS = 10
@@ -465,6 +465,7 @@ def generate_rss_feed(db: Session = Depends(get_db)):
     xml_content += '    <description>The premier digital destination for uncensored, high-impact journalism in the United States.</description>\n'
     xml_content += '    <language>en-us</language>\n'
     xml_content += f'    <atom:link href="{base_url}/feed.xml" rel="self" type="application/rss+xml" />\n'
+    xml_content += '    <atom:link href="https://pubsubhubbub.appspot.com/" rel="hub" />\n'
     
     for article in articles:
         pub_date = article.published_at if article.published_at else datetime.now(timezone.utc)
@@ -499,7 +500,7 @@ def generate_sitemap(db: Session = Depends(get_db)):
     
     # Start XML
     xml_content = '<?xml version="1.0" encoding="UTF-8"?>\n'
-    xml_content += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    xml_content += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n'
     
     # Add Homepage
     xml_content += '  <url>\n'
@@ -523,14 +524,17 @@ def generate_sitemap(db: Session = Depends(get_db)):
     
     # Add Articles
     for article in articles:
-        # Some dates might be None
         pub_date = article.published_at.strftime("%Y-%m-%dT%H:%M:%S+00:00") if article.published_at else "2026-01-01T00:00:00+00:00"
-        
+        safe_title = (article.title or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
         xml_content += '  <url>\n'
         xml_content += f'    <loc>{base_url}/article/{article.slug}</loc>\n'
         xml_content += f'    <lastmod>{pub_date}</lastmod>\n'
-        xml_content += '    <changefreq>never</changefreq>\n'
-        xml_content += '    <priority>0.6</priority>\n'
+        xml_content += '    <changefreq>daily</changefreq>\n'
+        xml_content += '    <priority>0.9</priority>\n'
+        xml_content += '    <image:image>\n'
+        xml_content += f'      <image:loc>{base_url}/img/{article.slug}.jpg</image:loc>\n'
+        xml_content += f'      <image:title>{safe_title}</image:title>\n'
+        xml_content += '    </image:image>\n'
         xml_content += '  </url>\n'
         
     xml_content += '</urlset>'
@@ -538,14 +542,51 @@ def generate_sitemap(db: Session = Depends(get_db)):
     return Response(content=xml_content, media_type="application/xml")
 
 
+@router.get("/news-sitemap.xml")
+def generate_news_sitemap(db: Session = Depends(get_db)):
+    """
+    Google News-specific XML sitemap (<news:news>) for rapid Google News & Top Stories indexing.
+    """
+    articles = db.query(NewsArticle).order_by(NewsArticle.published_at.desc()).limit(100).all()
+    base_url = "https://theuschronicle.com"
+    xml_content = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    xml_content += (
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
+        'xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" '
+        'xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n'
+    )
+    for article in articles:
+        pub_date = article.published_at.strftime("%Y-%m-%dT%H:%M:%S+00:00") if article.published_at else "2026-11-11T00:00:00+00:00"
+        safe_title = (article.title or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        safe_kw = (article.keywords or "US news, breaking news").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        xml_content += '  <url>\n'
+        xml_content += f'    <loc>{base_url}/article/{article.slug}</loc>\n'
+        xml_content += '    <news:news>\n'
+        xml_content += '      <news:publication>\n'
+        xml_content += '        <news:name>The American Chronicle</news:name>\n'
+        xml_content += '        <news:language>en</news:language>\n'
+        xml_content += '      </news:publication>\n'
+        xml_content += f'      <news:publication_date>{pub_date}</news:publication_date>\n'
+        xml_content += f'      <news:title>{safe_title}</news:title>\n'
+        xml_content += f'      <news:keywords>{safe_kw}</news:keywords>\n'
+        xml_content += '    </news:news>\n'
+        xml_content += '    <image:image>\n'
+        xml_content += f'      <image:loc>{base_url}/img/{article.slug}.jpg</image:loc>\n'
+        xml_content += '    </image:image>\n'
+        xml_content += '  </url>\n'
+    xml_content += '</urlset>'
+    return Response(content=xml_content, media_type="application/xml")
+
+
 @router.get("/robots.txt")
 def get_robots_txt():
     """
-    Returns standard robots.txt directing search engines to sitemap.xml
+    Returns standard robots.txt directing search engines to sitemap.xml and news-sitemap.xml
     """
     robots_content = """User-agent: *
 Allow: /
 
 Sitemap: https://theuschronicle.com/sitemap.xml
+Sitemap: https://theuschronicle.com/news-sitemap.xml
 """
     return Response(content=robots_content, media_type="text/plain")

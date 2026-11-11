@@ -11,6 +11,8 @@ logger = logging.getLogger(__name__)
 INDEXNOW_KEY = "7c3e9a51d84f4b2e9f06a1c2b5d8e3f4"
 HOST = "theuschronicle.com"
 ENDPOINT = "https://api.indexnow.org/indexnow"
+WEBSUB_HUB = "https://pubsubhubbub.appspot.com/"
+FEED_URL = f"https://{HOST}/feed.xml"
 
 
 def _payload(urls):
@@ -25,9 +27,11 @@ def ping(urls) -> None:
     try:
         with httpx.Client(timeout=10.0) as client:
             r = client.post(ENDPOINT, json=_payload(urls))
-        logger.info(f"IndexNow: submitted {len(urls)} URL(s), HTTP {r.status_code}")
+            logger.info(f"IndexNow: submitted {len(urls)} URL(s), HTTP {r.status_code}")
+            # Also notify Google WebSub (PubSubHubbub) so Googlebot fetches /feed.xml immediately
+            client.post(WEBSUB_HUB, data={"hub.mode": "publish", "hub.url": FEED_URL})
     except Exception as e:
-        logger.warning(f"IndexNow ping failed: {e}")
+        logger.warning(f"IndexNow/WebSub ping failed: {e}")
 
 
 async def ping_async(urls) -> None:
@@ -37,9 +41,11 @@ async def ping_async(urls) -> None:
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             r = await client.post(ENDPOINT, json=_payload(urls))
-        logger.info(f"IndexNow: submitted {len(urls)} URL(s), HTTP {r.status_code}")
+            logger.info(f"IndexNow: submitted {len(urls)} URL(s), HTTP {r.status_code}")
+            # Notify Google WebSub (PubSubHubbub) hub for instant RSS feed crawling
+            await client.post(WEBSUB_HUB, data={"hub.mode": "publish", "hub.url": FEED_URL})
     except Exception as e:
-        logger.warning(f"IndexNow ping failed: {e}")
+        logger.warning(f"IndexNow/WebSub ping failed: {e}")
 
 
 def article_url(slug: str) -> str:

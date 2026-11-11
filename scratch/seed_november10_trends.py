@@ -432,6 +432,94 @@ Hegseth and Pentagon officials dismissed the impeachment articles as baseless, s
 
 **What did President Trump say about military action against Iran on November 10, 2026?**
 President Trump stated that a major military campaign against Iran is "quite unlikely" and appears unnecessary following productive diplomatic talks facilitated by Qatar and Saudi Arabia."""
+    },
+    {
+        "title": "VETERANS DAY 2026 LIVE: NASA Astronaut Suni Williams Leads Historic NYC Fifth Avenue Parade as National Mall Monument Honors 41 Million Troops",
+        "slug": "veterans-day-2026-nyc-parade-suni-williams-national-mall-monument-41-million-troops",
+        "seo_description": "Retired U.S. Navy captain and NASA astronaut Sunita Williams serves as Grand Marshal of the 2026 NYC Veterans Day Parade as the National Military Monument on the National Mall extends its run.",
+        "keywords": "NYC Veterans Day Parade 2026, Sunita Suni Williams Grand Marshal, National Military Monument Lincoln Memorial, Veterans Day 2026 ceremonies, America 250th anniversary military tribute, Fifth Avenue parade live, Arlington National Cemetery wreath laying",
+        "is_bizarre": 0,
+        "is_breaking": 1,
+        "image_prompt": "Fifth Avenue in New York City draped in giant American flags during a crisp autumn morning parade with skyscrapers in background, wide editorial angle",
+        "content": """Hundreds of thousands of spectators lined **Fifth Avenue in New York City** and gathered at **Arlington National Cemetery** and the **National Mall in Washington, D.C.**, on Wednesday, November 11, 2026, as the United States observed a milestone **Veterans Day** marking America's **250th anniversary** year and 25 years since the September 11 attacks. Retired U.S. Navy Captain and legendary NASA astronaut **Sunita "Suni" Williams** led the nation's largest **Veterans Day Parade** up Manhattan's Fifth Avenue as Grand Marshal, while organizers on the National Mall announced an extension for the massive digital **National Military Monument** honoring more than **41 million American service members**.
+
+The nationwide commemorations sparked more than 1.2 million searches across the United States on Wednesday morning for **NYC Veterans Day Parade 2026**, **Sunita Williams Grand Marshal**, **National Military Monument Lincoln Memorial**, and **Veterans Day 2026 ceremonies**.
+
+## NASA Astronaut and Navy Veteran Suni Williams Leads NYC's Fifth Avenue March
+
+Organized by the **United War Veterans Council (UWVC)**, the **107th Annual New York City Veterans Day Parade** stepped off at 12:30 p.m. EST following an 11:00 a.m. wreath-laying ceremony at the **Eternal Light Flagstaff in Madison Square Park**, marking the exact 11th hour of the 11th day of the 11th month when the World War I armistice took effect in 1918.
+
+Serving as Grand Marshal for the 2026 procession, **Sunita "Suni" Williams**—who logged more than 3,000 flight hours as a U.S. Navy helicopter test pilot and completed multiple historic missions aboard the **International Space Station**—joined fellow veterans earlier Wednesday morning for a solemn **"Salute to Service"** tribute at the **9/11 Memorial & Museum** in Lower Manhattan. More than **20,000 marchers**, 250 military and civic contingents, vintage military vehicles, and active-duty units from all six branches of the U.S. Armed Forces marched north from **26th Street to 47th Street** along Fifth Avenue.
+
+Key highlights from Wednesday's nationwide **Veterans Day 2026** observances include:
+* **NYC Fifth Avenue Parade Route & Broadcast:** Marching from 26th Street to 47th Street with live television and streaming coverage across the tri-state area and national networks.
+* **41 Million Names on the National Mall:** At **Lincoln Memorial Plaza** in Washington, D.C., the temporary **National Military Monument** built for the nation's 250th anniversary—featuring towering digital American flags displaying the names of over **41 million U.S. service members**—extended its public exhibition due to record visitor turnout.
+* **Arlington National Cemetery Presidential Tribute:** Top defense officials, Gold Star families, and veterans' service organizations gathered at the **Tomb of the Unknown Soldier** for the traditional 11:00 a.m. presidential wreath-laying ceremony and three-volley rifle salute.
+* **45th Annual Georgia Veterans Day Parade & Regional Events:** Major regional parades and flyovers took place across **Atlanta, Chicago, San Diego, San Antonio, and Jacksonville**, celebrating living veterans from World War II, Korea, Vietnam, the Gulf War, Iraq, and Afghanistan.
+* **Stock Markets Open, Federal Offices Closed:** While the **New York Stock Exchange (NYSE)** and **Nasdaq** observed two minutes of silence at 11:00 a.m. EST and remained open for regular trading, U.S. bond markets, federal courts, post offices, and retail bank branches remained closed for the federal holiday.
+
+## Why the 2026 National Military Monument Drew Record Crowds in Washington
+
+Constructed at **Lincoln Memorial Plaza** in partnership with military historians and veterans' foundations for the **U.S. Semiquincentennial (250th anniversary)**, the **National Military Monument** uses high-contrast LED architectural panels arranged in the shape of unfurled American flags to scroll the verified service records and names of more than **41 million Americans** who have worn the nation's uniform since 1775. Families visiting Washington on Wednesday were able to look up ancestors and living veterans at interactive kiosks on the plaza and watch their names illuminate the monument in real time.
+
+## Frequently Asked Questions
+
+**Who is the Grand Marshal of the 2026 New York City Veterans Day Parade?**
+Retired U.S. Navy Captain and NASA astronaut Sunita "Suni" Williams is serving as Grand Marshal of the 2026 NYC Veterans Day Parade on Fifth Avenue.
+
+**What is the National Military Monument on the National Mall in November 2026?**
+It is a landmark temporary installation at Lincoln Memorial Plaza featuring giant digital American flags displaying the names of more than 41 million U.S. military service members in honor of America's 250th anniversary.
+
+**Are the stock market and banks open on Veterans Day, Wednesday, November 11, 2026?**
+The New York Stock Exchange (NYSE) and Nasdaq are open for normal trading hours on November 11, 2026, while U.S. bond markets, banks, post offices, and federal government offices are closed."""
+    },
+    {
+        "title": "STREAMING & HOLLYWOOD SHAKEUP: Skydance Overhauls Warner Bros. Discovery and DC Studios as Netflix and HBO Max Surge in 2026 Rankings",
+        "slug": "streaming-hollywood-shakeup-skydance-dc-studios-jeremy-latcham-netflix-hbo-max-2026",
+        "seo_description": "New 2026 U.S. streaming rankings show Netflix holding 67% household penetration and HBO Max overtaking Paramount+ as Skydance shakes up DC Studios leadership.",
+        "keywords": "2026 US streaming rankings Parks Associates, Skydance Warner Bros Discovery DC Studios, Jeremy Latcham James Gunn Peter Safran, Netflix 67 percent US households, HBO Max overtakes Paramount Plus, Hollywood studio restructuring 2026",
+        "is_bizarre": 0,
+        "is_breaking": 0,
+        "image_prompt": "Hollywood studio soundstage lots at twilight with glowing cinema spotlights and modern digital streaming control room, wide editorial shot",
+        "content": """The American entertainment and streaming landscape underwent a seismic realignment on Wednesday as new industry data from **Parks Associates** revealed that **Netflix** now reaches **67 percent of U.S. internet households** while **HBO Max** has officially overtaken **Paramount+** in national subscriber rankings—even as **Skydance's** high-profile integration of **Warner Bros. Discovery** sent shockwaves through Hollywood with the installation of Marvel veteran **Jeremy Latcham** atop **DC Studios**, replacing **James Gunn and Peter Safran**.
+
+The twin bombshells across streaming and studio executive suites drove a surge in U.S. search traffic on Wednesday for **2026 US streaming rankings**, **Skydance Warner Bros Discovery DC Studios**, **Jeremy Latcham DC Studios**, and **HBO Max vs Paramount Plus subscribers**.
+
+## Inside the 2026 Parks Associates U.S. Subscription Streaming Rankings
+
+Released Wednesday morning, the annual **Parks Associates U.S. Subscription Video on Demand (SVOD) Market Report** highlights how bundle consolidation, password-sharing crackdowns, and live sports rights have reshaped American living rooms in late 2026.
+
+For the second consecutive year, **Netflix** defended its position as the undisputed #1 streaming service in the United States, expanding its reach to **67 percent of broadband-connected American homes** thanks to its ad-supported tier and live NFL and boxing broadcasts. Behind the top tier of **Netflix, Amazon Prime Video, Disney+, Hulu, and Peacock**, a rejuvenated **HBO Max** climbed past **Paramount+** into sixth place nationally following its aggressive slate of prestige Sunday-night dramas and theatrical window releases.
+
+Key findings from Wednesday's Hollywood and digital media reports include:
+* **Netflix Holds #1 at 67% Household Penetration:** Ad-supported subscriptions and live event programming kept Netflix well ahead of all domestic competitors in 2026.
+* **HBO Max Surpasses Paramount+ for #6 Spot:** Strategic bundling and flagship franchise releases lifted HBO Max ahead of Paramount+ in active U.S. household subscriptions.
+* **Skydance Reshapes DC Studios Leadership:** Following its landmark studio consolidation, Skydance tapped former Marvel Studios executive and producer **Jeremy Latcham** to take over **DC Studios**, succeeding co-CEOs **James Gunn and Peter Safran**.
+* **U.S. vs. China Mobile Gaming Shift:** A separate global digital entertainment report released Wednesday showed China capturing **40 percent of the $121 billion global mobile gaming market** in 2026, while the U.S. share slipped to **16.5 percent** from parity in early 2024.
+* **Live Sports and Bundling Drive Retention:** Analysts noted that streaming services offering combined entertainment, news, and live sports bundles experienced 38 percent lower monthly subscriber churn in Q3 and Q4 2026.
+
+## Why Skydance Replaced James Gunn and Peter Safran with Jeremy Latcham at DC Studios
+
+The most talked-about executive move in Burbank this week centers on **DC Studios**. Appointed in late 2022 to architect a ten-year interconnected "Gods and Monsters" DC Universe across film, television, and animation, **James Gunn and Peter Safran** oversaw the initial reboot chapter before **Skydance's** sweeping corporate integration of **Warner Bros. Discovery** triggered a top-to-bottom review of theatrical budgets and franchise profitability.
+
+By bringing in **Jeremy Latcham**—a battle-tested producer known for shepherding *The Avengers*, *Guardians of the Galaxy*, *Spider-Man: Homecoming*, and *Dungeons & Dragons: Honor Among Thieves*—studio leadership is signaling a sharper focus on theatrical event blockbusters, tighter production budgets, and streamlined release calendars for **Batman, Superman, and Wonder Woman** properties heading into 2027 and 2028.
+
+### How Mobile Gaming and Live Sports Are Reshaping Media Revenues
+
+Beyond subscription video, Wednesday's media sector reports underscored a dramatic geographic shift in interactive entertainment. While the **United States and China** held roughly equal shares of the global mobile gaming market in early 2024, Chinese publishers and studios now command nearly **40 percent of the $121 billion global mobile gaming industry** as of November 2026, compared to **16.5 percent** for U.S.-based studios. Media analysts warn that legacy Hollywood conglomerates must invest more aggressively in cross-platform gaming franchises, interactive intellectual property, and live sports streaming rights to capture younger Gen Z and Gen Alpha audiences who spend more hours in interactive worlds than passive television viewing.
+
+Wall Street media analysts expect additional bundle partnerships between major Hollywood studios and tech platforms before the end of the fourth quarter, as networks race to lock in holiday streaming subscribers and upfront advertising commitments for 2027.
+
+## Frequently Asked Questions
+
+**Which streaming service is #1 in the United States in November 2026?**
+According to Parks Associates' November 2026 report, Netflix holds the #1 spot for the second straight year, reaching 67 percent of U.S. internet-connected households.
+
+**Who replaced James Gunn and Peter Safran at DC Studios in 2026?**
+Veteran film producer and former Marvel Studios executive Jeremy Latcham was tapped to lead DC Studios following Skydance's integration of Warner Bros. Discovery.
+
+**How did HBO Max perform in the 2026 U.S. streaming rankings?**
+HBO Max overtook Paramount+ to capture sixth place among U.S. subscription streaming platforms in the latest 2026 household penetration rankings."""
     }
 ]
 
@@ -444,7 +532,7 @@ def build_image_url(prompt: str, seed: int) -> str:
 def seed_database():
     conn = sqlite3.connect("news.db")
     cur = conn.cursor()
-    published = "2026-11-10 17:00:00"  # UTC (20:00 Istanbul)
+    published = "2026-11-11 11:15:00"  # UTC (14:15 Istanbul)
     for i, a in enumerate(ARTICLES):
         wc = len(a["content"].split())
         assert 700 <= wc <= 1100, f"{a['slug']}: word count {wc} outside 700-1100!"

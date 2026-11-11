@@ -53,6 +53,17 @@ async def lifespan(app: FastAPI):
         from app.services.images import fill_missing_image
         # 1 image per minute stays under the image API's free limit (1 per 45 s)
         scheduler.add_job(fill_missing_image, 'interval', seconds=60, id='image_job', replace_existing=True)
+
+        async def _keep_render_awake():
+            """Pings external production URL every 8 minutes so Render never spins down the instance."""
+            import httpx
+            try:
+                async with httpx.AsyncClient(timeout=10.0) as client:
+                    await client.get("https://theuschronicle.com/api/automation/status")
+            except Exception:
+                pass
+
+        scheduler.add_job(_keep_render_awake, 'interval', minutes=8, id='keepalive_job', replace_existing=True)
         scheduler.start()
         logger.info("APScheduler started. News pipeline will run every 5 minutes.")
     except Exception as e:
