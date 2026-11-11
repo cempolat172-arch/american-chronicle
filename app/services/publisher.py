@@ -26,7 +26,7 @@ def _title_signature(title: str) -> frozenset:
     return frozenset(w for w in words if len(w) > 2 and w not in _STOPWORDS)
 
 
-def _is_duplicate_story(sig: frozenset, others, threshold: float = 0.5) -> bool:
+def _is_duplicate_story(sig: frozenset, others, threshold: float = 0.35) -> bool:
     for o in others:
         if not o:
             continue

@@ -68,6 +68,8 @@
           "url": "https://theuschronicle.com/static/logo.png"
         }
       },
+      "keywords": "{{ (article.keywords or 'US news, breaking news') | replace('"', '') }}",
+      "isAccessibleForFree": true,
       "description": "{{ article.seo_description | replace('"', '\"') }}"
     }
     </script>
@@ -208,6 +210,21 @@
 
             <!-- Markdown Content Injection -->
             <div id="markdown-content" class="article-content text-gray-800 drop-cap-enabled">{% if content_html %}{{ content_html | safe }}{% endif %}</div>
+
+            {% if article.keywords %}
+            <!-- SEO Keyword Tags & Internal Search Links -->
+            <div class="mt-10 pt-6 border-t border-gray-300">
+                <span class="block text-[10px] font-sans font-bold uppercase tracking-widest text-gray-600 mb-3">Related Search Topics & Keywords</span>
+                <div class="flex flex-wrap gap-2">
+                    {% for kw in article.keywords.split(',') %}
+                    {% set clean_kw = kw.strip() %}
+                    {% if clean_kw %}
+                    <a href="/search?q={{ clean_kw | urlencode }}" class="px-3 py-1 bg-gray-100 border border-gray-300 text-xs font-sans font-bold text-gray-800 hover:bg-black hover:text-white transition">{{ clean_kw }}</a>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
 
             <!-- Original Source Link -->
             <div class="mt-12 pt-6 border-t-2 border-black text-center font-sans text-xs uppercase tracking-widest">

@@ -110,7 +110,7 @@ SEO & HIGH-CTR RULES:
 1. Do keyword research for this story: choose ONE high-volume focus keyword (the exact phrase Americans are typing into Google right now) and 6-8 secondary / long-tail search keywords.
 2. title: Generate a high-CTR, punchy, magnetic headline (max 85 characters) with the focus keyword near the start. Use varied journalistic prefixes when fitting (e.g. "BREAKING:", "SHOCKWAVE:", "EXCLUSIVE:", "CRISIS:", "ANALYSIS:") or strong active verbs.
 3. content: Markdown article, STRICTLY between 650 and 1,000 words:
-   - Opening lead paragraph: answer who/what/when/where with immediate impact and include the **focus keyword** in bold.
+   - Start IMMEDIATELY with the opening lead paragraph (do NOT start with a `##` heading on the first line). Answer who/what/when/where with immediate impact and include the **focus keyword** in bold.
    - Second paragraph: highlight the top trending search queries around this topic in **bold**.
    - 4 to 5 engaging `##` (H2) subheadings (and `###` H3 where helpful) containing target search keywords naturally.
    - A 5-item bulleted list (`* **Bold Point:** ...`) summarizing the key takeaways and facts.
@@ -328,7 +328,9 @@ async def process_article_with_ai(raw_news: dict, source: Optional[dict] = None)
         return None
 
     content = result.get("content", "").strip()
-    if len(content.split()) < 350:
+    # Strip any leading H1/H2 heading on the very first line so the article opens with a strong lead paragraph
+    content = re.sub(r"^\s*#{1,3}\s+[^\n]+\n+", "", content).strip()
+    if len(content.split()) < 450:
         logger.warning(f"Article too short ({len(content.split())} words), skipped: '{title}'")
         return None
 
