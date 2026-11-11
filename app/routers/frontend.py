@@ -578,6 +578,27 @@ def generate_news_sitemap(db: Session = Depends(get_db)):
     return Response(content=xml_content, media_type="application/xml")
 
 
+@router.get("/sitemap_index.xml")
+def generate_sitemap_index():
+    """
+    Sitemap Index pointing to both sitemap.xml and news-sitemap.xml for Google Search Console.
+    """
+    from datetime import datetime, timezone
+    now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S+00:00")
+    xml_content = f"""<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>https://theuschronicle.com/sitemap.xml</loc>
+    <lastmod>{now_iso}</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://theuschronicle.com/news-sitemap.xml</loc>
+    <lastmod>{now_iso}</lastmod>
+  </sitemap>
+</sitemapindex>"""
+    return Response(content=xml_content, media_type="application/xml")
+
+
 @router.get("/robots.txt")
 def get_robots_txt():
     """
