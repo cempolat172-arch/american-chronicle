@@ -611,3 +611,15 @@ Sitemap: https://theuschronicle.com/sitemap.xml
 Sitemap: https://theuschronicle.com/news-sitemap.xml
 """
     return Response(content=robots_content, media_type="text/plain")
+
+
+@router.get("/BingSiteAuth.xml")
+def get_bing_site_auth():
+    """
+    Bing Webmaster Tools XML verification endpoint.
+    """
+    xml_content = """<?xml version="1.0"?>
+<users>
+	<user>E3FF624E8656F98CFABD1F92D1AD5FF5</user>
+</users>"""
+    return Response(content=xml_content, media_type="application/xml")
