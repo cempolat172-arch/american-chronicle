@@ -80,6 +80,20 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="AI Autonomous Tech News Portal", lifespan=lifespan)
 
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response
+
+class HeadMethodMiddleware(BaseHTTPMiddleware):
+    """Allows HTTP HEAD requests across all GET routes without 405 Method Not Allowed, essential for search engine bots & crawlers."""
+    async def dispatch(self, request, call_next):
+        if request.method == "HEAD":
+            request.scope["method"] = "GET"
+            resp = await call_next(request)
+            return Response(content=b"", status_code=resp.status_code, headers=dict(resp.headers), media_type=resp.media_type)
+        return await call_next(request)
+
+app.add_middleware(HeadMethodMiddleware)
+
 from fastapi.staticfiles import StaticFiles
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
