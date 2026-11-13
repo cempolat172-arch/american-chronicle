@@ -16,16 +16,16 @@ logger = logging.getLogger(__name__)
 _cached_trends = None
 _cached_trends_time = 0
 
-# Fallback = real Google Trends US searches (Nov 11, 2026), used if the live feed is unreachable
+# Fallback = real Google Trends US searches (Nov 13, 2026), used if the live feed is unreachable
 BASELINE_TRENDS = [
-    "veterans day 2026 free meals deals",
-    "nyc veterans day parade suni williams",
-    "ford explorer nhtsa airbag recall",
-    "honda steering recall 635000 vehicles",
-    "thomas massie pete hegseth impeachment",
-    "october cpi inflation report",
-    "gm cadillac lyriq blazer ev recall",
-    "abu dhabi ukraine russia peace talks",
+    "microsoft 365 outage outlook teams down",
+    "jensen huang nvidia ceo resignation",
+    "chris van hollen chuck schumer senate leader",
+    "volkswagen id4 battery recall fire risk",
+    "bahrain us radar irgc strike",
+    "trump jd vance iran talks",
+    "michael wilbon espn health break",
+    "honda pilot acura mdx steering recall",
 ]
 TRENDS_RSS_URL = "https://trends.google.com/trending/rss?geo=US"
 MAX_TRENDS = 10
