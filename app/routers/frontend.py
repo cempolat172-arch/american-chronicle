@@ -16,16 +16,16 @@ logger = logging.getLogger(__name__)
 _cached_trends = None
 _cached_trends_time = 0
 
-# Fallback = real Google Trends US searches (Nov 13, 2026), used if the live feed is unreachable
+# Fallback = real Google Trends US searches (Nov 14, 2026), used if the live feed is unreachable
 BASELINE_TRENDS = [
+    "faa ground stop flights grounded nationwide",
+    "bmw park outside recall 721000 vehicles",
+    "peoria ethanol plant bomb threat",
     "microsoft 365 outage outlook teams down",
     "jensen huang nvidia ceo resignation",
-    "chris van hollen chuck schumer senate leader",
-    "volkswagen id4 battery recall fire risk",
-    "bahrain us radar irgc strike",
-    "trump jd vance iran talks",
-    "michael wilbon espn health break",
-    "honda pilot acura mdx steering recall",
+    "volkswagen id4 battery fire recall",
+    "raf lakenheath suspected drone incident",
+    "toyota tundra camshaft engine recall",
 ]
 TRENDS_RSS_URL = "https://trends.google.com/trending/rss?geo=US"
 MAX_TRENDS = 10
@@ -480,6 +480,16 @@ def generate_rss_feed(db: Session = Depends(get_db)):
         
         image = f"https://theuschronicle.com/img/{article.slug}.jpg"
         xml_content += f'      <media:content url="{image}" medium="image" />\n'
+        
+        # Add RSS categories for dlvr.it auto-hashtagging and Google News / Bing categorization
+        if article.keywords:
+            raw_kws = [k.strip() for k in article.keywords.split(",") if k.strip()]
+            for kw in raw_kws[:3]:
+                safe_kw = kw.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                xml_content += f'      <category>{safe_kw}</category>\n'
+        else:
+            xml_content += '      <category>Breaking News</category>\n'
+            xml_content += '      <category>US News</category>\n'
         xml_content += '    </item>\n'
         
     xml_content += '  </channel>\n'
